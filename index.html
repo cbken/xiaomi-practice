@@ -92,6 +92,24 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .gprog{font:800 13px/1 Nunito,sans-serif;color:var(--mute);margin:6px 0 0}
 .finish{margin-top:10px;padding:12px;border-radius:10px;background:var(--good-soft);text-align:center;font-weight:700}
 [hidden]{display:none!important}
+.pr{padding:16px 0 20px;border-bottom:1px solid var(--line)}
+.pr h2{font:700 17px/1.4 "Noto Sans TC",sans-serif;margin:0 0 6px}
+.locknote{padding:14px;border:1.5px dashed var(--line);border-radius:12px;color:var(--mute);font-size:14px;text-align:center;margin:10px 0}
+.write{width:100%;box-sizing:border-box;min-height:64px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:400 15px/1.5 "Noto Sans TC",sans-serif;background:var(--paper);color:var(--ink)}
+.chk{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+@media (max-width:480px){.chk{grid-template-columns:1fr}}
+.chk label{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper);font-size:14.5px;cursor:pointer}
+.chk label input{margin-top:3px;flex:0 0 auto}
+.chk label.hit{border-color:var(--good);background:var(--good-soft)}
+.chk label.miss{border-color:#C9A227;background:#FFF6D6;color:var(--ink)}
+.chk label.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.chk label .mark{margin-left:auto;font-weight:800}
+.missrecite{margin:6px 0}
+.sol{margin-top:8px}
+.sol .st{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+.sol .st .cn{flex:0 0 auto;font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;white-space:nowrap;margin-top:2px}
+.hintlist{margin:6px 0 0 18px;font-size:14px}
+.ansin{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:400 16px/1.4 "Noto Sans TC",sans-serif;background:var(--paper);color:var(--ink);margin:6px 0}
 </style></head><body>
 <header><div class="wrap">
 <div class="brand"><h1>小咪練習室<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div></div>
@@ -295,9 +313,79 @@ function onGuidedClick(e) {
     case 'gpeek': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(stage, '.gjudge')); break;
     case 'gok': showEl(q$(stage, '.gjudge'), false); showEl(q$(stage, '.review')); checkStage(stage); break;
     case 'gng': showEl(q$(stage, '.gjudge'), false); showEl(q$(stage, '.gteach')); q$(stage, '.gteach').scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
-    case 'finalrecite': showEl(b.closest('.recite'), false); showEl(q$(stage, '.finish')); document.getElementById('prog-' + stage.closest('.gp').id.slice(3)).textContent = '進度：完成 🎉'; break;
+    case 'finalrecite': { const gp = stage.closest('.gp'); if (!gp) break; showEl(b.closest('.recite'), false); showEl(q$(stage, '.finish')); document.getElementById('prog-' + gp.id.slice(3)).textContent = '進度：完成 🎉'; break; }
   }
 }
 renderGuided();
+
+// ---------- 獨自練習 ----------
+const PRACTICE = {"_說明": "獨自練習（Ken 9/13 15:47 OK）：同類換數字 → 填寫(選填) → 10 個觀念勾選(6 真+4 干擾) → 檢查(漏勾要念口訣) → 自己解(只給觀念順序當提示) → 看答案(逐步標觀念) → 總複習", "problems": [{"id": "v1", "after": "p1", "title": "練習 1・兩個正三角形（換數字）", "stem": "如圖，△ABC、△CDE 均為正三角形，且 C 在 BD 上。若 △ABC 與 △CDE 的周長分別為 30 和 18，則 CF ＝ ？（F 是 BE 與 AC 的交點）", "figure_from": "p1", "concepts": ["eq60", "perim", "corr", "par_sim", "collinear", "sim_ratio"], "distractors": ["area_sqrt", "vert", "right_acute", "ratio_split"], "answer": "CF ＝ 15/4（＝3.75）", "solution": [{"c": "perim", "t": "邊長：30÷3＝10、18÷3＝6"}, {"c": "eq60", "t": "∠ACB＝∠EDC＝60°"}, {"c": "corr", "t": "同位角相等 → AC ∥ ED"}, {"c": "par_sim", "t": "有平行線 → △BCF ∼ △BDE（∠B 共用、∠BCF＝∠BDE）"}, {"c": "collinear", "t": "BD＝BC＋CD＝10＋6＝16"}, {"c": "sim_ratio", "t": "BC：BD＝CF：DE → 10：16＝CF：6 → CF＝60÷16＝15/4"}], "check": "CF 要比 AC（＝10）短，3.75 合理 ✓"}, {"id": "v2", "after": "p2", "title": "練習 2・兩個正方形（換數字）", "stem": "如圖，正方形 ABCD 與正方形 CEFG 的面積分別為 100 cm² 和 25 cm²，且 AF 與 DG 交於 H 點，則 DH ＝ ？", "figure_from": "p2", "concepts": ["area_sqrt", "sq_sides", "perp_par", "x_sim", "sim_ratio", "ratio_split"], "distractors": ["eq60", "perim", "right_acute", "cofunc"], "answer": "DH ＝ 10/3（≈3.33）cm", "solution": [{"c": "area_sqrt", "t": "邊長：√100＝10、√25＝5"}, {"c": "sq_sides", "t": "DC＝10、CG＝GF＝5 → DG＝10－5＝5"}, {"c": "perp_par", "t": "AD、FG 都垂直 DC → AD ∥ FG"}, {"c": "x_sim", "t": "AF 與 DG 交叉成 X → △ADH ∼ △FGH"}, {"c": "sim_ratio", "t": "DH：GH＝AD：FG＝10：5＝2：1"}, {"c": "ratio_split", "t": "DG＝5 分成 2：1 → 一份 5÷3 → DH＝2 份＝10/3"}], "check": "DH 要比 DG（＝5）短、比 GH 長，10/3≈3.3 合理 ✓"}, {"id": "v3", "after": "p3", "title": "練習 3・直角三角形裡的正方形（換數字）", "stem": "如圖，△ABC 中 ∠B＝90°，P、Q、R、S 四點在各邊上，且四邊形 PQRS 為正方形。若 AP＝20、PQ＝10，求 QC 的長度。", "figure_from": "p3", "concepts": ["sq_sides", "right_acute", "cofunc", "AA", "sim_order", "sim_ratio"], "distractors": ["corr", "x_sim", "area_sqrt", "vert"], "answer": "QC ＝ 5", "solution": [{"c": "sq_sides", "t": "PS＝QR＝PQ＝10；∠APS＝∠RQC＝90°"}, {"c": "right_acute", "t": "∠A＋∠C＝90°"}, {"c": "cofunc", "t": "∠QRC＋∠C＝90° → ∠A＝∠QRC"}, {"c": "AA", "t": "直角＋一組銳角相等 → 相似"}, {"c": "sim_order", "t": "△APS ∼ △RQC（A→R、P→Q、S→C）"}, {"c": "sim_ratio", "t": "AP：RQ＝PS：QC → 20：10＝10：QC → QC＝5"}], "check": "20：10 是 2：1，10：QC 也要 2：1 → 5 ✓"}]};
+function seededShuffle(arr, seed) { const a = arr.slice(); let s = seed; for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function renderPractice() {
+  const sec = document.getElementById('set-guided'); const pmap = {}; GUIDED.problems.forEach(p => pmap[p.id] = p);
+  let h = `<div class="sec" id="practice-head">獨自練習・做完上面三題引導後解鎖</div><div class="locknote" id="practice-lock">🔒 先把「題 1～題 3」走到 🎉，這裡才會打開（要自己一個人試試看，不看引導）。</div><div id="practice-body" hidden>`;
+  PRACTICE.problems.forEach((v, idx) => {
+    const list = seededShuffle(v.concepts.concat(v.distractors), idx + 7);
+    h += `<article class="pr" id="pr-${v.id}" data-v="${idx}"><h2>${esc(v.title)}</h2>${pmap[v.figure_from].figure}<div class="gstem">${esc(v.stem)}</div>
+      <div class="stage" data-pstage="0"><div class="lab">① 先想：這題會用到哪些觀念？</div>
+        <div style="font-size:14px;color:var(--mute)">先用自己的話寫寫看（不想打字可以跳過），寫完再去勾選核對。</div>
+        <textarea class="write" id="w-${v.id}" placeholder="例：正三角形的角、周長算邊長…"></textarea>
+        <button class="gbtn next" data-pnext="${v.id}" data-i="1">寫好了／跳過，去勾選 →</button></div>
+      <div class="stage locked" data-pstage="1"><div class="lab">② 勾選：這 10 個裡面，哪些會用到？</div>
+        <div class="chk">` + list.map(cid => `<label data-cid="${cid}"><input type="checkbox"><span>${esc(CONCEPTS[cid].name)}</span><span class="mark"></span></label>`).join('') + `</div>
+        <button class="gbtn" data-act="pcheck">檢查</button>
+        <div class="missrecite" hidden></div>
+        <button class="gbtn next" data-pnext="${v.id}" data-i="2" hidden disabled>觀念對了，開始解題 →</button></div>
+      <div class="stage locked" data-pstage="2"><div class="lab">③ 自己解（這次沒有一步一步帶）</div>
+        <details><summary style="cursor:pointer;font-size:14px;color:var(--accent)">卡住了？看「用到的觀念順序」提示</summary><ol class="hintlist">${v.concepts.map(cid => `<li>${esc(CONCEPTS[cid].jingle)}</li>`).join('')}</ol></details>
+        <input class="ansin" id="a-${v.id}" placeholder="把你算出來的答案寫在這裡">
+        <button class="gbtn" data-act="ppeek">我算好了，看答案</button>
+        <div class="gans" hidden><b>答：</b>${esc(v.answer)}<div class="sol">${v.solution.map(s => `<div class="st"><span class="cn">${esc(CONCEPTS[s.c].name)}</span><span>${esc(s.t)}</span></div>`).join('')}</div><div class="hint" style="margin-top:6px">檢查：${esc(v.check)}</div></div>
+        <div class="gjudge" hidden><button class="gbtn ok" data-act="pok">✓ 我算對了</button><button class="gbtn ng" data-act="png">✗ 算錯了</button></div>
+        <div class="stuck" hidden>沒關係，回上面「${esc(pmap[v.after].title)}」再走一次引導，走完再回來這題。</div>
+        <button class="gbtn next" data-pnext="${v.id}" data-i="3" hidden>總複習 →</button></div>
+      <div class="stage locked" data-pstage="3"><div class="lab">④ 總複習・這題的觀念再走一遍</div>` +
+        v.concepts.map(cid => { const c = CONCEPTS[cid]; return conceptNode(cid, esc(c.retest.q), esc(c.retest.a), {tag: c.name}); }).join('') +
+        `<div class="recite" hidden data-final><div>最後把口訣連著念一遍：</div>${v.concepts.map(cid => `<div class="j">${esc(CONCEPTS[cid].jingle)}</div>`).join('')}<button class="gbtn" data-act="finalrecite">我念了 ✓</button></div>
+        <div class="finish" hidden>🎉 練習完成！</div></div>
+      <div class="gprog" id="prog-${v.id}">進度：想觀念</div></article>`;
+  });
+  h += `</div>`;
+  sec.insertAdjacentHTML('beforeend', h);
+}
+function checkPracticeUnlock() {
+  const done = GUIDED.problems.every(p => { const f = document.querySelector(`#gp-${p.id} .finish`); return f && !f.hidden; });
+  if (done) { showEl(document.getElementById('practice-lock'), false); showEl(document.getElementById('practice-body')); }
+}
+document.getElementById('set-guided').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const art = b.closest('.pr'); const stage = b.closest('.stage');
+  if (b.dataset.pnext) {
+    const a = document.getElementById('pr-' + b.dataset.pnext); const i = +b.dataset.i;
+    const st = a.querySelector(`.stage[data-pstage="${i}"]`); if (st) { st.classList.remove('locked'); b.hidden = true; st.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    document.getElementById('prog-' + b.dataset.pnext).textContent = ['進度：想觀念', '進度：勾選觀念', '進度：自己解', '進度：總複習'][i];
+    return;
+  }
+  if (!art) { if (b.dataset.act === 'finalrecite' || b.dataset.act === 'recited') setTimeout(checkPracticeUnlock, 0); return; }
+  const v = PRACTICE.problems[+art.dataset.v];
+  switch (b.dataset.act) {
+    case 'pcheck': {
+      const labels = [...stage.querySelectorAll('label')]; let missed = [];
+      labels.forEach(l => { const cid = l.dataset.cid, on = l.querySelector('input').checked, truth = v.concepts.includes(cid); l.classList.remove('hit', 'miss', 'wrong'); l.querySelector('input').disabled = true;
+        if (on && truth) { l.classList.add('hit'); l.querySelector('.mark').textContent = '✓'; }
+        else if (on && !truth) { l.classList.add('wrong'); l.querySelector('.mark').textContent = '✗ 用不到'; }
+        else if (!on && truth) { l.classList.add('miss'); l.querySelector('.mark').textContent = '⚠ 漏了'; missed.push(cid); } });
+      b.hidden = true; const mr = stage.querySelector('.missrecite'); const nx = stage.querySelector('.next');
+      if (missed.length) { mr.innerHTML = `<div style="font-size:14px;margin-bottom:4px">漏掉的觀念，把口訣各念一遍：</div>` + missed.map(cid => `<div class="recite" style="margin-top:4px"><div class="j">${esc(CONCEPTS[cid].jingle)}</div><button class="gbtn" data-act="missrecited">我念了 ✓</button></div>`).join(''); showEl(mr); nx.hidden = false; nx.disabled = true; }
+      else { nx.hidden = false; nx.disabled = false; }
+      break; }
+    case 'missrecited': { const r = b.closest('.recite'); r.style.opacity = .5; b.disabled = true; b.textContent = '✓'; const left = [...stage.querySelectorAll('.missrecite button')].some(x => !x.disabled); if (!left) stage.querySelector('.next').disabled = false; break; }
+    case 'ppeek': showEl(b, false); showEl(b.nextElementSibling); showEl(stage.querySelector('.gjudge')); break;
+    case 'pok': showEl(stage.querySelector('.gjudge'), false); stage.querySelector('.next').hidden = false; break;
+    case 'png': showEl(stage.querySelector('.gjudge'), false); showEl(stage.querySelector('.stuck')); stage.querySelector('.next').hidden = false; break;
+    case 'finalrecite': showEl(b.closest('.recite'), false); showEl(stage.querySelector('.finish')); document.getElementById('prog-' + v.id).textContent = '進度：完成 🎉'; break;
+  }
+});
+renderPractice();
 </script></body>
 </html>
