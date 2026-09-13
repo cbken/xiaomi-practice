@@ -344,7 +344,7 @@ function onGuidedClick(e) {
     case 'peek3': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(node, '.judge3')); break;
     case 'ok3': showEl(q$(node, '.teach'), false); showEl(q$(node, '.recite')); break;
     case 'recited': showEl(q$(node, '.recite'), false); nodeDone(node); break;
-    case 'layer2': case 'layer3': showEl(b, false); showEl(b.nextElementSibling); if (act === 'layer3') { const w = b.nextElementSibling.querySelector('[data-widget]'); if (w) WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value); } break;
+    case 'layer2': case 'layer3': { showEl(b, false); const layer = b.closest('.teach').querySelector(`.layer[data-layer="${act === 'layer2' ? 2 : 3}"]`); showEl(layer); if (layer) { const w = layer.querySelector('[data-widget]'); if (w) WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value); layer.scrollIntoView({ behavior: 'smooth', block: 'start' }); } break; }
     case 'prepeek': showEl(b, false); showEl(b.nextElementSibling); break;
     case 'copyask': { const t = b.dataset.ask; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = '已複製 ✓ 去 Discord 貼上'; }).catch(() => { b.textContent = t; }); break; }
     // 引導步
