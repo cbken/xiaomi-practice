@@ -60,22 +60,38 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .gp .gstem{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0 12px}
 .stage{margin:10px 0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper)}
 .stage.locked{display:none}
-.stage .lab{font:800 12px/1 Nunito,"Noto Sans TC",sans-serif;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
-.stage .lab.rev{color:var(--good)}
-.gq{margin:6px 0 4px}
-.gq .qtext{font-weight:500}
-.gq .hint{font-size:13px;color:var(--mute);margin-top:2px}
-.gq .gans{margin-top:6px;padding:8px 12px;border-radius:8px;background:var(--good-soft);color:var(--ink);font-size:15px;display:none}
-.gq.open .gans{display:block}
-.gq .gans b{color:var(--good)}
-.gbtn{margin-top:6px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:7px 14px;font:700 13px/1 "Noto Sans TC",sans-serif;cursor:pointer}
+.stage .lab{font:800 12px/1 Nunito,"Noto Sans TC",sans-serif;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+.node{margin:10px 0;padding:10px 12px;border-radius:10px;border:1px dashed var(--line)}
+.node.done{border-style:solid;border-color:var(--good)}
+.node .qtext{font-weight:500}
+.node .tag{display:inline-block;font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+.gans{margin-top:6px;padding:8px 12px;border-radius:8px;background:var(--good-soft);font-size:15px}
+.gans b{color:var(--good)}
+.gans .hint{font-size:13px;color:var(--mute);margin-top:3px}
+.gbtn{margin-top:6px;margin-right:6px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:7px 14px;font:700 13px/1 "Noto Sans TC",sans-serif;cursor:pointer}
+.gbtn.ok{border-color:var(--good);background:var(--good-soft)}
+.gbtn.ng{border-color:var(--bad);background:var(--bad-soft)}
 .gbtn.next{background:var(--sel);color:var(--sel-ink);border-color:var(--sel);padding:9px 18px;font-size:14px}
-.gq.open .gbtn.peek{display:none}
+.gbtn:disabled{opacity:.4;cursor:not-allowed}
+.teach{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--why);border-left:3px solid var(--bad)}
+.teach .tl{font:800 12px/1 Nunito,"Noto Sans TC",sans-serif;letter-spacing:1px;color:var(--bad);margin:8px 0 4px}
+.teach .tl:first-child{margin-top:0}
+.teach .sub{margin:4px 0 0 0}
+.recite{margin-top:8px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);border-left:3px solid var(--accent)}
+.recite .j{font:700 17px/1.5 "Noto Sans TC",sans-serif;letter-spacing:1px}
+.recite .j::before{content:"🗣 "}
+.donemark{margin-top:6px;color:var(--good);font-weight:700;font-size:14px}
+.stuck{margin-top:6px;font-size:13px;color:var(--bad)}
 .review{margin-top:10px;background:var(--why);border-left:3px solid var(--good);border-radius:0 8px 8px 0;padding:10px 12px;font-size:14.5px}
 .review b{color:var(--good)}
+.gate{padding:10px 12px;border-radius:10px;background:var(--accent-soft);margin-bottom:8px}
+.gate .j{font:700 16px/1.5 "Noto Sans TC",sans-serif}
+.gate .j::before{content:"🗣 這一步要用："}
 .concepts{margin:8px 0 0;padding-left:20px}
 .concepts li{margin:2px 0}
 .gprog{font:800 13px/1 Nunito,sans-serif;color:var(--mute);margin:6px 0 0}
+.finish{margin-top:10px;padding:12px;border-radius:10px;background:var(--good-soft);text-align:center;font-weight:700}
+[hidden]{display:none!important}
 </style></head><body>
 <header><div class="wrap">
 <div class="brand"><h1>小咪練習室<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div></div>
@@ -151,36 +167,136 @@ function resetSet(key){
 }
 render();
 
-const GUIDED = {"_說明": "引導解題（Ken 9/13 設計：暖身舊觀念 → 引導一小步 → 複習觀念+小考 → 循環 → 收尾）。給程度不佳的學生用。", "_適用": "姊姊 數學第五冊 1-3 相似形／1-4 相似三角形的應用（9/21 課輔小考範圍）", "problems": [{"id": "p1", "title": "題 1・兩個正三角形，求 CF", "source": "講義 1-4 相似三角形的應用・老師講解 15", "stem": "如圖，△ABC、△CDE 均為正三角形，且 C 在 BD 上。若 △ABC 與 △CDE 的周長分別為 24 和 15，則 CF ＝ ？（F 是 BE 與 AC 的交點）", "figure": "<svg viewBox='0 0 360 190' width='360' style='max-width:100%;display:block;margin:6px auto'><polygon points='30,160 190,160 110,21' fill='#DDE3F3' stroke='#222' stroke-width='1.5'/><polygon points='190,160 290,160 240,73' fill='#F3E1DA' stroke='#222' stroke-width='1.5'/><line x1='30' y1='160' x2='240' y2='73' stroke='#222' stroke-width='1.5'/><circle cx='149.5' cy='92.5' r='3' fill='#222'/><text x='105' y='15' font-size='15' font-style='italic'>A</text><text x='14' y='172' font-size='15' font-style='italic'>B</text><text x='184' y='180' font-size='15' font-style='italic'>C</text><text x='294' y='172' font-size='15' font-style='italic'>D</text><text x='238' y='66' font-size='15' font-style='italic'>E</text><text x='153' y='88' font-size='15' font-style='italic'>F</text></svg>", "warmup": [{"q": "正三角形的三個角，各是幾度？", "a": "都是 60°", "hint": "三個角一樣大，三個加起來 180°，所以一個是 180÷3。"}, {"q": "周長 24 的正三角形，一邊多長？", "a": "8", "hint": "三邊一樣長，周長÷3。"}, {"q": "兩條線跟第三條線的「同位角」相等，這兩條線是什麼關係？", "a": "平行", "hint": "同位角＝同一個位置的角（都在左上、或都在右下）。相等就平行。"}, {"q": "兩個三角形相似，它們的「對應邊」有什麼關係？", "a": "成比例（比值一樣）", "hint": "大的是小的幾倍，每一邊都是同樣的倍數。"}], "steps": [{"guide": "先把兩個三角形的邊長寫在圖上。△ABC 的邊長是？△CDE 的邊長是？", "answer": "8 和 5", "why": "24÷3＝8，15÷3＝5。", "review": "周長＝3×邊長，所以邊長＝周長÷3。", "quiz": {"q": "周長 27 的正三角形，邊長是？", "a": "9"}}, {"guide": "∠ACB 幾度？∠EDC 幾度？", "answer": "都是 60°", "why": "兩個都是正三角形的角。", "review": "正三角形不管大小，每個角都是 60°。", "quiz": {"q": "∠ABC 是幾度？", "a": "60°"}}, {"guide": "AC 和 ED 這兩條線，跟底線 BD 的夾角都是 60°。那 AC 和 ED 是什麼關係？", "answer": "平行（AC ∥ ED）", "why": "∠ACB 和 ∠EDC 是同位角，都 60° → 相等 → 平行。", "review": "同位角相等 → 兩線平行。在圖上把 C 和 D 那兩個 60° 塗一樣的顏色，就看得出它們是「同一個位置的角」。", "quiz": {"q": "如果一個是 60°、一個是 70°，AC 和 ED 還平行嗎？", "a": "不平行"}}, {"guide": "有平行線就會有相似三角形。找找看：哪兩個三角形共用 B 這個角，而且一個的邊在 AC 上、另一個的邊在 ED 上？", "answer": "△BCF 和 △BDE", "why": "小的：B、C、F；大的：B、D、E。都從 B 出發。", "review": "AA 相似：兩個角相等就相似。這裡 ∠B 共用、∠BCF＝∠BDE（同位角）。對應點要對好：B→B、C→D、F→E。", "quiz": {"q": "小三角形的 F 對到大三角形的哪一點？", "a": "E"}}, {"guide": "把對應邊寫成比例：BC 對 BD、CF 對 DE。BC、BD、DE 各是多少？", "answer": "BC＝8、BD＝13、DE＝5", "why": "BD 是 BC＋CD＝8＋5＝13。", "review": "⚠️ 最常錯：BD 不是 8 也不是 5，是兩段加起來 13。寫比例前先把每一段的長度標在圖上。", "quiz": {"q": "如果兩個正三角形邊長是 6 和 4，BD 是多少？", "a": "10"}}], "final": {"guide": "BC：BD ＝ CF：DE，也就是 8：13 ＝ CF：5。CF 自己算出來。", "answer": "CF ＝ 40/13", "why": "CF ＝ 5×8÷13 ＝ 40/13。", "check": "CF 應該比 AC（＝8）短。40/13 ≈ 3.1，合理 ✓", "concepts": ["正三角形每個角 60°", "邊長＝周長÷3", "同位角相等 → 平行", "有平行線 → 找相似三角形（AA）", "相似三角形對應邊成比例"]}}, {"id": "p2", "title": "題 2・兩個正方形，求 DH", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，正方形 ABCD 與正方形 CEFG 的面積分別為 81 cm² 和 9 cm²，且 AF 與 DG 交於 H 點，則 DH ＝ ？", "figure": "<svg viewBox='0 0 300 230' width='300' style='max-width:100%;display:block;margin:6px auto'><rect x='40' y='30' width='180' height='180' fill='#FFF6C8' stroke='#222' stroke-width='1.5'/><rect x='220' y='150' width='60' height='60' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><line x1='40' y1='30' x2='280' y2='150' stroke='#222' stroke-width='1.5'/><circle cx='220' cy='120' r='3' fill='#222'/><text x='24' y='24' font-size='15' font-style='italic'>A</text><text x='224' y='24' font-size='15' font-style='italic'>D</text><text x='24' y='222' font-size='15' font-style='italic'>B</text><text x='210' y='226' font-size='15' font-style='italic'>C</text><text x='226' y='116' font-size='15' font-style='italic'>H</text><text x='204' y='146' font-size='15' font-style='italic'>G</text><text x='284' y='154' font-size='15' font-style='italic'>F</text><text x='284' y='218' font-size='15' font-style='italic'>E</text></svg>", "warmup": [{"q": "正方形的面積是 81，一邊多長？", "a": "9", "hint": "邊×邊＝81，什麼數自己乘自己是 81？"}, {"q": "正方形的四個邊，長度有什麼關係？", "a": "全部一樣長", "hint": "所以知道一邊就知道四邊。"}, {"q": "兩條線都「直直的」（都跟同一條線垂直），它們是什麼關係？", "a": "平行", "hint": "同時垂直同一條線的兩條線一定平行。"}, {"q": "兩個三角形相似，對應邊有什麼關係？", "a": "成比例", "hint": "大的是小的幾倍，每邊都一樣倍數。"}], "steps": [{"guide": "先把兩個正方形的邊長寫在圖上。大的邊長？小的邊長？", "answer": "9 和 3", "why": "9×9＝81，3×3＝9。", "review": "面積＝邊×邊 → 邊長＝開根號。常見：4→2、9→3、16→4、25→5、36→6、49→7、64→8、81→9、100→10。", "quiz": {"q": "面積 64 的正方形，邊長？", "a": "8"}}, {"guide": "H 在哪條線上？D、H、G、C 四個點是不是在同一條直線上？", "answer": "是，都在 DC 這條邊上", "why": "G 是小正方形的頂點，剛好落在大正方形的邊 DC 上；H 是 AF 穿過 DC 的地方。", "review": "看圖先確認「哪些點在同一條線上」，比例才寫得出來。", "quiz": {"q": "DG 這一段有多長？（DC 減掉 CG）", "a": "9－3＝6"}}, {"guide": "AD 是大正方形的上邊、FG 是小正方形的上邊，兩條都是橫的。它們是什麼關係？", "answer": "平行（AD ∥ FG）", "why": "都跟 DC 垂直 → 互相平行。", "review": "正方形的對邊平行、鄰邊垂直。兩個正方形靠在同一條線上，它們的邊也會互相平行。", "quiz": {"q": "AB 和 FE 平行嗎？", "a": "平行"}}, {"guide": "有平行線就找相似三角形。AF 這條斜線切過 AD 和 FG，H 是交叉點。哪兩個三角形相似？（講義的 Key 也在提示你）", "answer": "△ADH ∼ △FGH", "why": "∠ADH＝∠FGH＝90°，∠AHD＝∠FHG（對頂角）→ AA 相似。", "review": "「X 形」的相似：兩條平行線被兩條斜線交叉，中間那點兩邊的三角形相似。對應點：A→F、D→G、H→H。", "quiz": {"q": "對頂角（交叉點兩邊相對的角）相不相等？", "a": "相等"}}, {"guide": "對應邊寫成比例：AD 對 FG，DH 對 GH。AD、FG 各多長？", "answer": "AD＝9、FG＝3，所以 DH：GH＝9：3＝3：1", "why": "相似比就是 9：3。", "review": "⚠️ DH 和 GH 加起來才是 DG（＝6）。比例 3：1 的意思是把 6 分成 3 份和 1 份。", "quiz": {"q": "把 6 分成 3：1，大的那份是多少？", "a": "4.5"}}], "final": {"guide": "DH：GH＝3：1，DH＋GH＝6。DH 自己算出來。", "answer": "DH ＝ 4.5 cm（9/2）", "why": "6×3/4＝4.5。", "check": "DH 應該比 DG（＝6）短、比 GH 長。4.5 合理 ✓", "concepts": ["面積 → 邊長（開根號）", "正方形對邊平行、鄰邊垂直", "對頂角相等", "X 形相似（AA）", "比例分配：把一段依比例切開"]}}, {"id": "p3", "title": "題 3・直角三角形裡的正方形，求 QC", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，△ABC 中 ∠B＝90°，P、Q、R、S 四點在各邊上，且四邊形 PQRS 為正方形。若 AP＝18、PQ＝12，求 QC 的長度。", "figure": "<svg viewBox='0 0 200 240' width='220' style='max-width:100%;display:block;margin:6px auto'><polygon points='40,20 116,172 40,210' fill='none' stroke='#222' stroke-width='1.5'/><polygon points='40,128.6 94.3,128.6 94.3,182.9 40,182.9' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><polyline points='104,166 110,178 98,184' fill='none' stroke='#222' stroke-width='1'/><text x='26' y='18' font-size='15' font-style='italic'>A</text><text x='122' y='178' font-size='15' font-style='italic'>B</text><text x='26' y='224' font-size='15' font-style='italic'>C</text><text x='22' y='132' font-size='15' font-style='italic'>P</text><text x='22' y='190' font-size='15' font-style='italic'>Q</text><text x='98' y='198' font-size='15' font-style='italic'>R</text><text x='98' y='124' font-size='15' font-style='italic'>S</text></svg>", "figure_note": "（圖照講義重畫：直角在 B，P、Q 在 AC 上，S 在 AB 上，R 在 BC 上）", "warmup": [{"q": "正方形的四個邊多長？四個角幾度？", "a": "四邊一樣長，四個角都 90°", "hint": "PQ＝12，所以 PS、QR 也都是 12。"}, {"q": "直角三角形裡，兩個銳角加起來幾度？", "a": "90°", "hint": "三個角 180°，扣掉直角 90°。"}, {"q": "兩個直角三角形，只要再有一個銳角相等，它們就？", "a": "相似（AA）", "hint": "直角對直角、銳角對銳角，兩個角相等就相似。"}, {"q": "相似三角形的對應邊有什麼關係？", "a": "成比例", "hint": ""}], "steps": [{"guide": "正方形 PQRS 的邊長是多少？PS 和 QR 各多長？", "answer": "都是 12", "why": "PQ＝12，正方形四邊一樣。", "review": "題目只給 PQ，但正方形的四邊都一樣長，等於送你四個 12。", "quiz": {"q": "SR 多長？", "a": "12"}}, {"guide": "看小三角形 △APS：它的直角在哪一點？", "answer": "在 P（∠APS＝90°）", "why": "∠APS 是正方形的角。", "review": "正方形的每個角都是 90°，所以貼著正方形的小三角形通常會多一個直角。", "quiz": {"q": "△RQC 的直角在哪一點？", "a": "Q"}}, {"guide": "△APS 的 ∠A，和 △RQC 的 ∠C，有什麼關係？", "answer": "加起來 90°（因為 ∠B＝90°）", "why": "大三角形 ABC 的兩個銳角互補成 90°。", "review": "直角三角形：兩個銳角相加＝90°。", "quiz": {"q": "∠A＝35°，∠C 幾度？", "a": "55°"}}, {"guide": "再看 △RQC：∠QRC 和 ∠C 加起來也是 90°。那 ∠A 和 ∠QRC 有什麼關係？", "answer": "相等", "why": "都等於 90°－∠C。", "review": "兩個角都「跟同一個角湊成 90°」，它們就相等。這是找相似最常用的招。", "quiz": {"q": "∠x＋∠C＝90°、∠y＋∠C＝90°，∠x 和 ∠y 相等嗎？", "a": "相等"}}, {"guide": "現在 △APS 和 △RQC 都有直角、又有一組銳角相等 → 相似。把對應點對好：A 對誰？P 對誰？S 對誰？", "answer": "A→R、P→Q、S→C", "why": "直角對直角（P→Q）、相等的銳角對（A→R）、剩下的（S→C）。", "review": "⚠️ 寫相似要照對應順序：△APS ∼ △RQC。順序寫錯，比例就會反。", "quiz": {"q": "AP 對到大三角形的哪一邊？", "a": "RQ"}}], "final": {"guide": "對應邊成比例：AP：RQ ＝ PS：QC，也就是 18：12 ＝ 12：QC。QC 自己算出來。", "answer": "QC ＝ 8", "why": "QC＝12×12÷18＝8。", "check": "18：12 是 3：2，那 12：QC 也要 3：2 → QC＝8 ✓（交叉相乘：18×QC＝144）", "concepts": ["正方形四邊等長、四角 90°", "直角三角形兩銳角相加 90°", "同角的餘角相等", "AA 相似（直角＋一個銳角）", "相似要照對應順序寫，對應邊成比例"]}}]};
-function gq(q, hint, ans, id){ return `<div class="gq" id="${id}"><div class="qtext">${q}</div>${hint?`<div class="hint">提示：${esc(hint)}</div>`:''}<button class="gbtn peek" data-open="${id}">我想好了，看答案</button><div class="gans"><b>答：</b>${ans}</div></div>`; }
-function renderGuided(){
-  const set=GUIDED; const tabs=document.getElementById('tabs'), main=document.getElementById('main');
-  const t=document.createElement('button'); t.className='tab'; t.role='tab'; t.id='tab-guided'; t.textContent='姊姊・引導解題'; t.setAttribute('aria-selected','false'); t.onclick=()=>show('guided'); tabs.appendChild(t);
-  const sec=document.createElement('section'); sec.className='set'; sec.id='set-guided';
-  let h=`<div class="setsub">${esc(set['_適用'])}　·　每題先暖身，再一步一步走；每一步先自己想，再按「看答案」</div>`;
-  set.problems.forEach(p=>{
-    h+=`<article class="gp" id="gp-${p.id}"><h2>${esc(p.title)}</h2><div class="gsrc">${esc(p.source)}</div>${p.figure||''}${p.figure_note?`<div class="hint" style="text-align:center;font-size:12px;color:var(--mute)">${esc(p.figure_note)}</div>`:''}<div class="gstem">${esc(p.stem)}</div>`;
-    // 暖身
-    h+=`<div class="stage" data-stage="0"><div class="lab">暖身・這題會用到的舊觀念</div>`+p.warmup.map((w,i)=>gq(esc(w.q),w.hint,esc(w.a),`${p.id}-w${i}`)).join('')+`<button class="gbtn next" data-next="${p.id}" data-i="1">暖身完了，開始解題 →</button></div>`;
-    p.steps.forEach((s,i)=>{
-      const n=i+1;
-      h+=`<div class="stage locked" data-stage="${n}"><div class="lab">引導 ${n}</div>`+gq(esc(s.guide),'',`${esc(s.answer)}<div class="hint" style="margin-top:4px">${esc(s.why)}</div>`,`${p.id}-s${i}`)+
-         `<div class="review"><b>複習：</b>${esc(s.review)}${s.quiz?`<div style="margin-top:8px">`+gq('再考一題：'+esc(s.quiz.q),'',esc(s.quiz.a),`${p.id}-q${i}`)+`</div>`:''}</div><button class="gbtn next" data-next="${p.id}" data-i="${n+1}">下一步 →</button></div>`;
-    });
-    const f=p.final, N=p.steps.length+1;
-    h+=`<div class="stage locked" data-stage="${N}"><div class="lab">收尾・自己算出來</div>`+gq(esc(f.guide),'',`${esc(f.answer)}<div class="hint" style="margin-top:4px">${esc(f.why)}</div>`,`${p.id}-f`)+
-       `<div class="review"><b>檢查：</b>${esc(f.check)}</div><div class="review" style="border-color:var(--accent)"><b style="color:var(--accent)">這題用到的觀念：</b><ol class="concepts">${f.concepts.map(c=>`<li>${esc(c)}</li>`).join('')}</ol></div></div>`;
-    h+=`<div class="gprog" id="prog-${p.id}">進度：暖身</div></article>`;
+const GUIDED = {"_說明": "引導解題 v2（Ken 9/13 定調）：暖身（問→錯就重講→念口訣）→ 引導步（念口訣→想一小步→看答案→複習+再考）→ 收尾（自算→檢查）→ 總複習（觀念全部再問→口訣連念）。concept 指向 guided_concepts.json。", "_適用": "姊姊 數學第五冊 1-3 相似形／1-4 相似三角形的應用（9/21 課輔小考範圍）", "problems": [{"id": "p1", "title": "題 1・兩個正三角形，求 CF", "source": "講義 1-4 相似三角形的應用・老師講解 15", "stem": "如圖，△ABC、△CDE 均為正三角形，且 C 在 BD 上。若 △ABC 與 △CDE 的周長分別為 24 和 15，則 CF ＝ ？（F 是 BE 與 AC 的交點）", "figure": "<svg viewBox='0 0 360 190' width='360' style='max-width:100%;display:block;margin:6px auto'><polygon points='30,160 190,160 110,21' fill='#DDE3F3' stroke='#222' stroke-width='1.5'/><polygon points='190,160 290,160 240,73' fill='#F3E1DA' stroke='#222' stroke-width='1.5'/><line x1='30' y1='160' x2='240' y2='73' stroke='#222' stroke-width='1.5'/><circle cx='149.5' cy='92.5' r='3' fill='#222'/><text x='105' y='15' font-size='15' font-style='italic'>A</text><text x='14' y='172' font-size='15' font-style='italic'>B</text><text x='184' y='180' font-size='15' font-style='italic'>C</text><text x='294' y='172' font-size='15' font-style='italic'>D</text><text x='238' y='66' font-size='15' font-style='italic'>E</text><text x='153' y='88' font-size='15' font-style='italic'>F</text></svg>", "warmup": [{"concept": "eq60", "q": "正三角形的三個角，各是幾度？", "a": "都是 60°"}, {"concept": "perim", "q": "周長 24 的正三角形，一邊多長？", "a": "8（24÷3）"}, {"concept": "corr", "q": "兩條線跟第三條線的「同位角」相等，這兩條線是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個三角形相似，它們的「對應邊」有什麼關係？", "a": "成比例（比值一樣）"}], "steps": [{"concept": "perim", "guide": "先把兩個三角形的邊長寫在圖上。△ABC 的邊長是？△CDE 的邊長是？", "answer": "8 和 5", "why": "24÷3＝8，15÷3＝5。", "quiz": {"q": "周長 27 的正三角形，邊長是？", "a": "9"}}, {"concept": "eq60", "guide": "∠ACB 幾度？∠EDC 幾度？", "answer": "都是 60°", "why": "兩個都是正三角形的角。", "quiz": {"q": "∠ABC 是幾度？", "a": "60°"}}, {"concept": "corr", "guide": "AC 和 ED 這兩條線，跟底線 BD 的夾角都是 60°。那 AC 和 ED 是什麼關係？", "answer": "平行（AC ∥ ED）", "why": "∠ACB 和 ∠EDC 是同位角，都 60° → 相等 → 平行。", "quiz": {"q": "如果一個是 60°、一個是 70°，AC 和 ED 還平行嗎？", "a": "不平行"}}, {"concept": "par_sim", "guide": "有平行線就會有相似三角形。找找看：哪兩個三角形共用 B 這個角，而且一個的邊在 AC 上、另一個的邊在 ED 上？", "answer": "△BCF 和 △BDE", "why": "小的：B、C、F；大的：B、D、E。都從 B 出發。∠B 共用、∠BCF＝∠BDE（同位角）→ AA 相似。對應點：B→B、C→D、F→E。", "quiz": {"q": "小三角形的 F 對到大三角形的哪一點？", "a": "E"}}, {"concept": "collinear", "guide": "把對應邊寫成比例：BC 對 BD、CF 對 DE。BC、BD、DE 各是多少？", "answer": "BC＝8、BD＝13、DE＝5", "why": "BD 是 BC＋CD＝8＋5＝13。⚠️ 最常錯：BD 不是 8 也不是 5。", "quiz": {"q": "如果兩個正三角形邊長是 6 和 4，BD 是多少？", "a": "10"}}], "final": {"concept": "sim_ratio", "guide": "BC：BD ＝ CF：DE，也就是 8：13 ＝ CF：5。CF 自己算出來。", "answer": "CF ＝ 40/13", "why": "CF ＝ 5×8÷13 ＝ 40/13。", "check": "CF 應該比 AC（＝8）短。40/13 ≈ 3.1，合理 ✓", "concepts": ["eq60", "perim", "corr", "par_sim", "collinear", "sim_ratio"]}}, {"id": "p2", "title": "題 2・兩個正方形，求 DH", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，正方形 ABCD 與正方形 CEFG 的面積分別為 81 cm² 和 9 cm²，且 AF 與 DG 交於 H 點，則 DH ＝ ？", "figure": "<svg viewBox='0 0 300 230' width='300' style='max-width:100%;display:block;margin:6px auto'><rect x='40' y='30' width='180' height='180' fill='#FFF6C8' stroke='#222' stroke-width='1.5'/><rect x='220' y='150' width='60' height='60' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><line x1='40' y1='30' x2='280' y2='150' stroke='#222' stroke-width='1.5'/><circle cx='220' cy='120' r='3' fill='#222'/><text x='24' y='24' font-size='15' font-style='italic'>A</text><text x='224' y='24' font-size='15' font-style='italic'>D</text><text x='24' y='222' font-size='15' font-style='italic'>B</text><text x='210' y='226' font-size='15' font-style='italic'>C</text><text x='226' y='116' font-size='15' font-style='italic'>H</text><text x='204' y='146' font-size='15' font-style='italic'>G</text><text x='284' y='154' font-size='15' font-style='italic'>F</text><text x='284' y='218' font-size='15' font-style='italic'>E</text></svg>", "warmup": [{"concept": "area_sqrt", "q": "正方形的面積是 81，一邊多長？", "a": "9"}, {"concept": "sq_sides", "q": "正方形的四個邊、四個角有什麼關係？", "a": "四邊一樣長、四角都 90°"}, {"concept": "perp_par", "q": "兩條線都跟同一條線垂直，它們是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個相似三角形，一組對應邊 9 和 3，另一組對應邊 6 和多少？", "a": "2（都是 3 倍）"}], "steps": [{"concept": "area_sqrt", "guide": "先把兩個正方形的邊長寫在圖上。大的邊長？小的邊長？", "answer": "9 和 3", "why": "9×9＝81，3×3＝9。", "quiz": {"q": "面積 64 的正方形，邊長？", "a": "8"}}, {"concept": "collinear", "guide": "H 在哪條線上？D、H、G、C 四個點是不是在同一條直線上？", "answer": "是，都在 DC 這條邊上", "why": "G 是小正方形的頂點，剛好落在大正方形的邊 DC 上；H 是 AF 穿過 DC 的地方。", "quiz": {"q": "DG 這一段有多長？（DC 減掉 CG）", "a": "9－3＝6"}}, {"concept": "perp_par", "guide": "AD 是大正方形的上邊、FG 是小正方形的上邊，兩條都是橫的。它們是什麼關係？", "answer": "平行（AD ∥ FG）", "why": "都跟 DC 垂直 → 互相平行。", "quiz": {"q": "AB 和 FE 平行嗎？", "a": "平行"}}, {"concept": "x_sim", "guide": "有平行線就找相似三角形。AF 這條斜線切過 AD 和 FG，H 是交叉點。哪兩個三角形相似？（講義的 Key 也在提示你）", "answer": "△ADH ∼ △FGH", "why": "∠ADH＝∠FGH＝90°，∠AHD＝∠FHG（對頂角）→ AA 相似。對應點：A→F、D→G、H→H。", "quiz": {"q": "對頂角（交叉點兩邊相對的角）相不相等？", "a": "相等"}}, {"concept": "sim_ratio", "guide": "對應邊寫成比例：AD 對 FG，DH 對 GH。AD、FG 各多長？比例是多少？", "answer": "AD＝9、FG＝3，所以 DH：GH＝9：3＝3：1", "why": "相似比就是 9：3。⚠️ DH 和 GH 加起來才是 DG（＝6）。", "quiz": {"q": "DH：GH＝3：1 的意思是把 DG 分成幾份？", "a": "4 份（3＋1）"}}], "final": {"concept": "ratio_split", "guide": "DH：GH＝3：1，DH＋GH＝6。DH 自己算出來。", "answer": "DH ＝ 4.5 cm（9/2）", "why": "一份＝6÷4＝1.5，DH 是 3 份＝4.5。", "check": "DH 應該比 DG（＝6）短、比 GH 長。4.5 合理 ✓", "concepts": ["area_sqrt", "sq_sides", "perp_par", "x_sim", "sim_ratio", "ratio_split"]}}, {"id": "p3", "title": "題 3・直角三角形裡的正方形，求 QC", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，△ABC 中 ∠B＝90°，P、Q、R、S 四點在各邊上，且四邊形 PQRS 為正方形。若 AP＝18、PQ＝12，求 QC 的長度。", "figure": "<svg viewBox='0 0 200 240' width='220' style='max-width:100%;display:block;margin:6px auto'><polygon points='40,20 116,172 40,210' fill='none' stroke='#222' stroke-width='1.5'/><polygon points='40,128.6 94.3,128.6 94.3,182.9 40,182.9' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><polyline points='104,166 110,178 98,184' fill='none' stroke='#222' stroke-width='1'/><text x='26' y='18' font-size='15' font-style='italic'>A</text><text x='122' y='178' font-size='15' font-style='italic'>B</text><text x='26' y='224' font-size='15' font-style='italic'>C</text><text x='22' y='132' font-size='15' font-style='italic'>P</text><text x='22' y='190' font-size='15' font-style='italic'>Q</text><text x='98' y='198' font-size='15' font-style='italic'>R</text><text x='98' y='124' font-size='15' font-style='italic'>S</text></svg>", "figure_note": "（圖照講義重畫：直角在 B，P、Q 在 AC 上，S 在 AB 上，R 在 BC 上）", "warmup": [{"concept": "sq_sides", "q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°"}, {"concept": "right_acute", "q": "直角三角形裡，兩個銳角加起來幾度？", "a": "90°"}, {"concept": "AA", "q": "兩個直角三角形，只要再有一個銳角相等，它們就？", "a": "相似（AA）"}, {"concept": "sim_ratio", "q": "△甲∼△乙，甲的邊 18 對乙的 12；甲的另一邊 12 對乙的多少？", "a": "8"}], "steps": [{"concept": "sq_sides", "guide": "正方形 PQRS 的邊長是多少？PS 和 QR 各多長？", "answer": "都是 12", "why": "PQ＝12，正方形四邊一樣。", "quiz": {"q": "SR 多長？", "a": "12"}}, {"concept": "sq_sides", "guide": "看小三角形 △APS：它的直角在哪一點？△RQC 的直角在哪一點？", "answer": "△APS 在 P、△RQC 在 Q", "why": "∠APS、∠RQC 都是正方形的角，90°。", "quiz": {"q": "∠PSR 幾度？", "a": "90°"}}, {"concept": "right_acute", "guide": "△APS 的 ∠A，和 △RQC 的 ∠C，有什麼關係？", "answer": "加起來 90°", "why": "大三角形 ABC 的 ∠B＝90°，兩個銳角 ∠A＋∠C＝90°。", "quiz": {"q": "∠A＝35°，∠C 幾度？", "a": "55°"}}, {"concept": "cofunc", "guide": "再看 △RQC：∠QRC 和 ∠C 加起來也是 90°。那 ∠A 和 ∠QRC 有什麼關係？", "answer": "相等", "why": "都等於 90°－∠C。", "quiz": {"q": "∠x＋∠C＝90°、∠y＋∠C＝90°，∠x 和 ∠y 相等嗎？", "a": "相等"}}, {"concept": "sim_order", "guide": "現在 △APS 和 △RQC 都有直角、又有一組銳角相等 → 相似。把對應點對好：A 對誰？P 對誰？S 對誰？", "answer": "A→R、P→Q、S→C，寫成 △APS ∼ △RQC", "why": "直角對直角（P→Q）、相等的銳角對（A→R）、剩下的（S→C）。順序寫錯，比例就會反。", "quiz": {"q": "AP 對到大三角形的哪一邊？", "a": "RQ"}}], "final": {"concept": "sim_ratio", "guide": "對應邊成比例：AP：RQ ＝ PS：QC，也就是 18：12 ＝ 12：QC。QC 自己算出來。", "answer": "QC ＝ 8", "why": "QC＝12×12÷18＝8。", "check": "18：12 是 3：2，那 12：QC 也要 3：2 → QC＝8 ✓（交叉相乘：18×QC＝144）", "concepts": ["sq_sides", "right_acute", "cofunc", "AA", "sim_order", "sim_ratio"]}}]};
+const CONCEPTS = {"eq60": {"name": "正三角形每個角都是 60°", "teach": "正三角形＝三邊一樣長的三角形。三邊一樣長，三個角就一樣大。任何三角形的三個角加起來都是 180°，三個一樣大 → 每個 180÷3＝60°。不管這個正三角形是大是小，角永遠都是 60°。", "recap": "正三角形：三邊等長、三角都 60°，跟大小無關。", "confirm": {"q": "用你的話說：為什麼正三角形的角一定是 60°？", "a": "三個角一樣大，加起來 180°，所以一個 60°。"}, "retest": {"q": "一個邊長 100 的超大正三角形，它的角是幾度？", "a": "還是 60°。"}, "jingle": "正三角形，三邊等、三角六十"}, "perim": {"name": "邊長＝周長÷3", "teach": "周長＝繞一圈的總長度＝三邊加起來。正三角形三邊一樣長，所以周長＝3×邊長。反過來，知道周長要找邊長，就是周長÷3。例：周長 24 → 24÷3＝8。", "recap": "正三角形：周長＝3×邊長，邊長＝周長÷3。", "confirm": {"q": "周長 24 的正三角形，為什麼邊長是 8 而不是 12？", "a": "因為有三邊，要除以 3；除以 2 是兩邊的。"}, "retest": {"q": "周長 36 的正三角形，邊長多少？", "a": "12"}, "jingle": "周長除三，就是邊"}, "corr": {"name": "同位角相等 → 平行", "teach": "一條線（截線）穿過兩條線，會做出很多角。「同位角」＝在兩個交叉點上「同一個位置」的角（都在右上，或都在左下）。如果兩個同位角一樣大，那兩條線就是平行的。想像鐵軌：兩條軌道平行，枕木斜斜切過去，切出來的角在兩邊是一樣的。", "recap": "同位角相等 ⇔ 兩線平行。", "confirm": {"q": "「同位角」是什麼意思？用你的話說。", "a": "截線切過兩條線，兩邊位置相同的那一對角。"}, "retest": {"q": "截線切過兩條線，右上角的角一個是 50°、另一個也是 50°，這兩條線平行嗎？", "a": "平行（同位角相等）。"}, "jingle": "同位角相等，兩線就平行"}, "sim_ratio": {"name": "相似三角形：對應邊成比例", "teach": "兩個三角形「相似」＝形狀一樣、大小不一定一樣（像照片放大縮小）。放大幾倍，每一邊都放大同樣的倍數，所以「對應邊」的比是固定的。例：小三角形邊 3、4、5，放大 2 倍變 6、8、10，每一組都是 1：2。寫比例時，小的對小的、大的對大的，順序不能亂。", "recap": "相似 → 對應邊比值全部一樣（放大倍數）。", "confirm": {"q": "兩個相似三角形，一組對應邊是 4 和 8，另一組對應邊是 5 和多少？", "a": "10（都是 2 倍）。"}, "retest": {"q": "△甲∼△乙，甲的邊 6 對乙的邊 9。甲另一邊 10 對乙的邊多少？", "a": "15（6：9＝10：15，1.5 倍）。"}, "jingle": "相似三角形，對應邊成比例"}, "par_sim": {"name": "有平行線 → 找相似三角形", "teach": "只要圖裡有一組平行線被兩條斜線切到，就會出現兩個相似三角形。原因：平行線做出同位角（或內錯角）相等，再加上共用的角 → 兩個角相等 → AA 相似。所以看到「平行」兩個字，下一步就是找兩個三角形寫比例。", "recap": "平行 → 角相等 → 相似 → 寫比例。", "confirm": {"q": "為什麼有平行線就會有相似三角形？", "a": "平行線讓對應的角相等，兩個角相等就相似。"}, "retest": {"q": "△ABC 中，DE ∥ BC（D 在 AB 上、E 在 AC 上）。哪兩個三角形相似？", "a": "△ADE ∼ △ABC。"}, "jingle": "看到平行線，就找相似三角形"}, "area_sqrt": {"name": "正方形面積 → 邊長（開根號）", "teach": "正方形面積＝邊×邊。反過來要從面積找邊長，就要問「什麼數自己乘自己會等於它」，這叫開根號。常用的要背：1、4、9、16、25、36、49、64、81、100 → 邊長 1～10。例：81＝9×9 → 邊長 9。", "recap": "面積＝邊²，邊長＝√面積。", "confirm": {"q": "面積 9 的正方形，邊長為什麼是 3 不是 4.5？", "a": "因為 3×3＝9；4.5 是 9 除以 2，不是自己乘自己。"}, "retest": {"q": "面積 49 的正方形，邊長？", "a": "7"}, "jingle": "面積開根號，就是邊長"}, "sq_sides": {"name": "正方形：四邊等長、四角 90°", "teach": "正方形的定義就是四個邊一樣長、四個角都是直角（90°）。所以題目只要給你一邊，四邊你都知道了；正方形貼著的三角形，也會多出一個 90° 的角。", "recap": "正方形：四邊等長、四角直角。", "confirm": {"q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°。"}, "retest": {"q": "正方形一邊是 7，周長多少？", "a": "28"}, "jingle": "四邊一樣長，四角九十度"}, "perp_par": {"name": "同時垂直同一條線 → 互相平行", "teach": "兩條線如果都跟第三條線垂直（都是 90°），它們一定互相平行，永遠不會碰到。例：兩個正方形都靠在同一條底線上，它們「直的邊」都跟底線垂直，所以那些邊互相平行。", "recap": "都垂直同一條線 → 平行。", "confirm": {"q": "為什麼大正方形的邊 AD 和小正方形的邊 FG 會平行？", "a": "它們都跟 DC 這條線垂直。"}, "retest": {"q": "地板上立兩根柱子，兩根都跟地板垂直，兩根柱子是什麼關係？", "a": "平行"}, "jingle": "都垂直同一條，彼此就平行"}, "vert": {"name": "對頂角相等", "teach": "兩條線交叉成一個 X，交叉點兩邊「對面」的那一對角叫對頂角，它們永遠一樣大。例：X 的上面那個角 40°，下面那個也是 40°。", "recap": "X 交叉：對面的角相等。", "confirm": {"q": "兩條線交叉，一個角是 70°，它對面的角幾度？", "a": "70°"}, "retest": {"q": "AF 和 DG 交於 H，∠AHD 和 ∠FHG 相等嗎？為什麼？", "a": "相等，對頂角。"}, "jingle": "交叉對面角，永遠一樣大"}, "AA": {"name": "AA 相似：兩個角相等就相似", "teach": "要判斷兩個三角形相似，不用三個角都檢查——三角形三個角加起來 180°，兩個角相等，第三個自動相等。所以「找到兩組相等的角」就可以說它們相似，這叫 AA 相似。常見來源：共用的角、對頂角、同位角、直角。", "recap": "兩組角相等 → 相似（AA）。", "confirm": {"q": "為什麼只要兩個角相等就夠了？", "a": "第三個角＝180° 減前兩個，一定也相等。"}, "retest": {"q": "△甲有角 50°、60°；△乙有角 60°、70°。它們相似嗎？", "a": "相似（甲的第三角是 70°，兩組角都對上）。"}, "jingle": "兩角相等，就是相似"}, "x_sim": {"name": "X 形相似", "teach": "兩條平行線被兩條斜線交叉成一個 X，交叉點上下（或左右）兩個三角形一定相似：因為對頂角相等、平行線的內錯角相等 → AA。對應點要照「相對」的位置對：上面的左點對下面的右點。", "recap": "平行線 + 交叉 → X 兩邊三角形相似。", "confirm": {"q": "X 形相似的兩組相等的角是哪兩組？", "a": "交叉點的對頂角、平行線的內錯角。"}, "retest": {"q": "AD ∥ FG，AF 與 DG 交於 H。哪兩個三角形相似？", "a": "△ADH ∼ △FGH"}, "jingle": "平行加交叉，X 兩邊相似"}, "ratio_split": {"name": "把一段依比例分開", "teach": "一段長 6 要分成 3：1，就是分成 4 份，一份＝6÷4＝1.5，大的拿 3 份＝4.5，小的 1 份＝1.5。做法：先把比例的數字加起來當「總份數」，再算一份多少。", "recap": "分 a：b → 總份數 a＋b，一份＝全長÷(a＋b)。", "confirm": {"q": "把 6 分成 3：1，為什麼要除以 4 而不是除以 3？", "a": "3 份加 1 份共 4 份。"}, "retest": {"q": "把 20 分成 2：3，大的那份多少？", "a": "12（一份 4，3 份 12）。"}, "jingle": "份數先加總，一份是多少"}, "right_acute": {"name": "直角三角形：兩個銳角相加 90°", "teach": "三角形三個角加起來 180°。直角三角形已經有一個 90°，剩下兩個角只能分 90°。所以知道一個銳角，另一個就是 90° 減它。", "recap": "直角三角形：銳角 + 銳角 = 90°。", "confirm": {"q": "為什麼直角三角形的兩個銳角加起來剛好 90°？", "a": "180° 扣掉直角 90°。"}, "retest": {"q": "∠A＝28°，另一個銳角幾度？", "a": "62°"}, "jingle": "直角三角形，兩銳角湊九十"}, "cofunc": {"name": "同角的餘角相等", "teach": "兩個角都「跟同一個角湊成 90°」，那這兩個角一定一樣大。例：∠x＋∠C＝90°，∠y＋∠C＝90° → ∠x＝∠y（都是 90°－∠C）。這招在「直角三角形裡放正方形」的題目裡幾乎每題都用到。", "recap": "跟同一個角湊 90° 的兩個角相等。", "confirm": {"q": "∠A 和 ∠QRC 都跟 ∠C 湊成 90°，所以？", "a": "∠A＝∠QRC。"}, "retest": {"q": "∠1＋∠3＝90°、∠2＋∠3＝90°，∠1 和 ∠2 的關係？", "a": "相等"}, "jingle": "跟同一角湊九十，兩個角相等"}, "sim_order": {"name": "相似要照對應順序寫", "teach": "寫 △APS ∼ △RQC 的時候，字母的順序就是對應：A 對 R、P 對 Q、S 對 C。對的方法：直角對直角、相等的銳角對相等的銳角、剩下的對剩下的。順序寫對，比例式就是把對應的邊照順序放：AP：RQ＝PS：QC＝AS：RC。", "recap": "相似的字母順序＝對應關係，比例照順序寫。", "confirm": {"q": "△APS ∼ △RQC，P 對到誰？為什麼？", "a": "Q，因為兩個都是直角。"}, "retest": {"q": "△ABC ∼ △DEF，AB 對哪一邊？BC 對哪一邊？", "a": "AB 對 DE，BC 對 EF。"}, "jingle": "相似照順序，字母對字母"}, "collinear": {"name": "先看哪些點在同一條線上", "teach": "寫比例前要先確定「哪幾個點在同一條直線上」，線段才能加減。例：D、H、G、C 都在 DC 這條邊上，所以 DG＝DC－CG，DH＋HG＝DG。", "recap": "同一直線上的點，線段可以加減。", "confirm": {"q": "G 在 DC 上、CG＝3、DC＝9，DG 多長？", "a": "6"}, "retest": {"q": "B、C、D 在一直線上，BC＝8、CD＝5，BD 多長？", "a": "13"}, "jingle": "同一條線上，線段能加減"}};
+const mastered = new Set();   // 跨題：前面 ✓ 過的觀念
+let NID = 0;
+
+// ---------- 一個「觀念節點」：問 → 看答案 → ✓/✗ → (✗:重講→複習→確認→再考) → 念口訣 → 完成 ----------
+function conceptNode(cid, q, a, opts = {}) {
+  const c = CONCEPTS[cid]; const id = 'n' + (++NID);
+  const tag = opts.tag ? `<span class="tag">${esc(opts.tag)}</span>` : (mastered.has(cid) ? `<span class="tag">前面 ✓ 過</span>` : '');
+  return `<div class="node" id="${id}" data-cid="${cid}" data-attempts="0">
+    <div class="qtext">${q}${tag}</div>
+    <button class="gbtn" data-act="peek">我想好了，看答案</button>
+    <div class="gans" hidden><b>答：</b>${a}</div>
+    <div class="judge" hidden><button class="gbtn ok" data-act="ok">✓ 我答對了</button><button class="gbtn ng" data-act="ng">✗ 我不會／答錯</button></div>
+    <div class="teach" hidden>
+      <div class="tl">① 重講一遍</div><div>${esc(c.teach)}</div>
+      <div class="tl">② 一句話複習</div><div>${esc(c.recap)}</div>
+      <div class="tl">③ 換你說一次（確認你懂了）</div>
+      <div class="sub">${esc(c.confirm.q)}<br><button class="gbtn" data-act="peek2">我說完了，看參考答案</button><div class="gans" hidden><b>參考：</b>${esc(c.confirm.a)}</div>
+        <div class="judge2" hidden><button class="gbtn ok" data-act="ok2">✓ 我說得對</button><button class="gbtn ng" data-act="ng2">✗ 還不太行，再講一次</button></div></div>
+      <div class="tl retest-l" hidden>④ 再考一題</div>
+      <div class="sub retest" hidden>${esc(c.retest.q)}<br><button class="gbtn" data-act="peek3">我想好了，看答案</button><div class="gans" hidden><b>答：</b>${esc(c.retest.a)}</div>
+        <div class="judge3" hidden><button class="gbtn ok" data-act="ok3">✓ 答對了</button><button class="gbtn ng" data-act="ng3">✗ 答錯，回到重講</button></div></div>
+      <div class="stuck" hidden>這個觀念先記下來，等下問小咪或爸爸 🐱（可以繼續往下）</div>
+    </div>
+    <div class="recite" hidden><div>大聲念三遍（念出來才會記得）：</div><div class="j">${esc(c.jingle)}</div><button class="gbtn" data-act="recited">我念了 ✓</button></div>
+    <div class="donemark" hidden>✓ 這個觀念過關</div>
+  </div>`;
+}
+
+function stepStage(p, s, n) {
+  const c = CONCEPTS[s.concept];
+  return `<div class="stage step locked" data-stage="${n}">
+    <div class="lab">引導 ${n}</div>
+    <div class="gate"><div class="j">${esc(c.jingle)}</div><div style="font-size:13px;color:var(--mute)">念一遍再開始想</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
+    <div class="guide" hidden>
+      <div class="qtext">${esc(s.guide)}</div>
+      <button class="gbtn" data-act="gpeek">我想好了，看答案</button>
+      <div class="gans" hidden><b>答：</b>${esc(s.answer)}<div class="hint">${esc(s.why)}</div></div>
+      <div class="gjudge" hidden><button class="gbtn ok" data-act="gok">✓ 我想對了</button><button class="gbtn ng" data-act="gng">✗ 我沒想到（這個觀念再學一次）</button></div>
+      <div class="gteach" hidden>${conceptNode(s.concept, esc(c.confirm.q), esc(c.confirm.a), {tag: '重學'})}</div>
+      <div class="review" hidden><b>複習：</b>${esc(c.recap)}<div style="margin-top:8px">${conceptNode(s.concept, '再考一題：' + esc(s.quiz.q), esc(s.quiz.a), {tag: ''})}</div></div>
+    </div>
+    <button class="gbtn next" data-next="${p.id}" data-i="${n + 1}" disabled>下一步 →</button>
+  </div>`;
+}
+
+function renderGuided() {
+  const set = GUIDED; const tabs = document.getElementById('tabs'), main = document.getElementById('main');
+  const t = document.createElement('button'); t.className = 'tab'; t.role = 'tab'; t.id = 'tab-guided'; t.textContent = '姊姊・引導解題'; t.setAttribute('aria-selected', 'false'); t.onclick = () => show('guided'); tabs.appendChild(t);
+  const sec = document.createElement('section'); sec.className = 'set'; sec.id = 'set-guided';
+  let h = `<div class="setsub">${esc(set['_適用'])}<br>每題：暖身 → 一步一步引導 → 收尾 → 總複習。每一格先自己想、念出來，再按「看答案」。</div>`;
+  set.problems.forEach(p => {
+    h += `<article class="gp" id="gp-${p.id}"><h2>${esc(p.title)}</h2><div class="gsrc">${esc(p.source)}</div>${p.figure || ''}${p.figure_note ? `<div style="text-align:center;font-size:12px;color:var(--mute)">${esc(p.figure_note)}</div>` : ''}<div class="gstem">${esc(p.stem)}</div>`;
+    h += `<div class="stage" data-stage="0"><div class="lab">暖身・這題會用到的舊觀念</div>` + p.warmup.map(w => conceptNode(w.concept, esc(w.q), esc(w.a))).join('') + `<button class="gbtn next" data-next="${p.id}" data-i="1" disabled>暖身完了，開始解題 →</button></div>`;
+    p.steps.forEach((s, i) => { h += stepStage(p, s, i + 1); });
+    const f = p.final, N = p.steps.length + 1, fc = CONCEPTS[f.concept];
+    h += `<div class="stage step locked" data-stage="${N}"><div class="lab">收尾・自己算出來</div>
+      <div class="gate"><div class="j">${esc(fc.jingle)}</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
+      <div class="guide" hidden><div class="qtext">${esc(f.guide)}</div><button class="gbtn" data-act="gpeek">我算好了，看答案</button>
+        <div class="gans" hidden><b>答：</b>${esc(f.answer)}<div class="hint">${esc(f.why)}</div></div>
+        <div class="gjudge" hidden><button class="gbtn ok" data-act="gok">✓ 我算對了</button><button class="gbtn ng" data-act="gng">✗ 算錯了（這個觀念再學一次）</button></div>
+        <div class="gteach" hidden>${conceptNode(f.concept, esc(fc.confirm.q), esc(fc.confirm.a), {tag: '重學'})}</div>
+        <div class="review" hidden><b>檢查：</b>${esc(f.check)}<div style="margin-top:8px">${conceptNode(f.concept, '再考一題：' + esc(fc.retest.q), esc(fc.retest.a), {tag: ''})}</div></div>
+      </div><button class="gbtn next" data-next="${p.id}" data-i="${N + 1}" disabled>做完了，總複習 →</button></div>`;
+    // 總複習
+    const wq = {}; p.warmup.forEach(w => wq[w.concept] = w);
+    h += `<div class="stage locked" data-stage="${N + 1}"><div class="lab">總複習・這題用到的觀念全部再走一遍</div>` +
+      f.concepts.map(cid => { const c = CONCEPTS[cid]; const q = wq[cid] ? wq[cid].q : c.retest.q; const a = wq[cid] ? wq[cid].a : c.retest.a; return conceptNode(cid, esc(q), esc(a), {tag: c.name}); }).join('') +
+      `<div class="recite" hidden data-final><div>最後，把這題的口訣連著念一遍：</div>` + f.concepts.map(cid => `<div class="j">${esc(CONCEPTS[cid].jingle)}</div>`).join('') + `<button class="gbtn" data-act="finalrecite">我念了 ✓</button></div>
+      <div class="finish" hidden>🎉 這題完成！這題用了 ${f.concepts.length} 個觀念：${f.concepts.map(cid => esc(CONCEPTS[cid].name)).join('、')}</div></div>`;
+    h += `<div class="gprog" id="prog-${p.id}">進度：暖身</div></article>`;
   });
-  sec.innerHTML=h; main.appendChild(sec);
-  sec.addEventListener('click',e=>{
-    const o=e.target.closest('[data-open]'); if(o){ document.getElementById(o.dataset.open).classList.add('open'); return; }
-    const nx=e.target.closest('[data-next]'); if(nx){
-      const art=document.getElementById('gp-'+nx.dataset.next); const i=+nx.dataset.i;
-      const st=art.querySelector(`.stage[data-stage="${i}"]`); if(st){ st.classList.remove('locked'); nx.hidden=true; st.scrollIntoView({behavior:'smooth',block:'start'}); }
-      const total=art.querySelectorAll('.stage').length-1; document.getElementById('prog-'+nx.dataset.next).textContent = i<=total-1 ? `進度：第 ${i} 步／共 ${total-1} 步` : '進度：收尾 🎉';
+  sec.innerHTML = h; main.appendChild(sec);
+  sec.addEventListener('click', onGuidedClick);
+}
+
+function q$(el, s) { return el.querySelector(s); }
+function showEl(el, on = true) { if (el) el.hidden = !on; }
+function nodeDone(node) {
+  node.classList.add('done'); showEl(q$(node, '.donemark'));
+  mastered.add(node.dataset.cid);
+  const stage = node.closest('.stage'); checkStage(stage);
+  const gt = node.closest('.gteach'); if (gt) { showEl(gt, false); showEl(q$(gt.parentElement, '.review')); }
+}
+function checkStage(stage) {
+  if (!stage) return;
+  const nodes = [...stage.querySelectorAll('.node')].filter(n => !n.closest('.gteach') || n.closest('.gteach').hidden === false);
+  const visibleNodes = [...stage.querySelectorAll('.node')].filter(n => !n.closest('[hidden]'));
+  const allDone = visibleNodes.length > 0 && visibleNodes.every(n => n.classList.contains('done'));
+  const nx = q$(stage, '.next'); if (nx) nx.disabled = !allDone;
+  if (stage.querySelector('[data-final]') && allDone) showEl(stage.querySelector('[data-final]'));
+}
+function onGuidedClick(e) {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act; const node = b.closest('.node'); const stage = b.closest('.stage');
+  if (b.dataset.next) {
+    const art = document.getElementById('gp-' + b.dataset.next); const i = +b.dataset.i;
+    const st = art.querySelector(`.stage[data-stage="${i}"]`); if (st) { st.classList.remove('locked'); b.hidden = true; st.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    const total = art.querySelectorAll('.stage').length; const prog = document.getElementById('prog-' + b.dataset.next);
+    prog.textContent = i < total - 2 ? `進度：引導 ${i}／${total - 3}` : (i === total - 2 ? '進度：收尾' : '進度：總複習');
+    return;
+  }
+  if (!act) return;
+  switch (act) {
+    // 觀念節點
+    case 'peek': showEl(b, false); showEl(q$(node, ':scope > .gans')); showEl(q$(node, '.judge')); break;
+    case 'ok': showEl(q$(node, '.judge'), false); showEl(q$(node, '.recite')); break;
+    case 'ng': case 'ng3': {
+      showEl(q$(node, '.judge'), false); const t = q$(node, '.teach'); showEl(t);
+      const n = +node.dataset.attempts + 1; node.dataset.attempts = n;
+      // reset inner
+      showEl(q$(t, '.judge2'), false); showEl(q$(t, '.judge3'), false); showEl(q$(t, '.retest'), false); showEl(q$(t, '.retest-l'), false);
+      t.querySelectorAll('.gans').forEach(g => g.hidden = true); t.querySelectorAll('[data-act="peek2"],[data-act="peek3"]').forEach(x => x.hidden = false);
+      if (n >= 2) showEl(q$(t, '.stuck'));
+      t.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
     }
-  });
+    case 'peek2': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(node, '.judge2')); break;
+    case 'ng2': { const t = q$(node, '.teach'); showEl(q$(t, '.judge2'), false); q$(t, '[data-act="peek2"]').hidden = false; q$(t, '[data-act="peek2"]').nextElementSibling.hidden = true; t.scrollIntoView({ behavior: 'smooth', block: 'start' }); break; }
+    case 'ok2': showEl(q$(node, '.judge2'), false); showEl(q$(node, '.retest-l')); showEl(q$(node, '.retest')); break;
+    case 'peek3': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(node, '.judge3')); break;
+    case 'ok3': showEl(q$(node, '.teach'), false); showEl(q$(node, '.recite')); break;
+    case 'recited': showEl(q$(node, '.recite'), false); nodeDone(node); break;
+    // 引導步
+    case 'gate': showEl(b.closest('.gate'), false); showEl(q$(stage, '.guide')); break;
+    case 'gpeek': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(stage, '.gjudge')); break;
+    case 'gok': showEl(q$(stage, '.gjudge'), false); showEl(q$(stage, '.review')); checkStage(stage); break;
+    case 'gng': showEl(q$(stage, '.gjudge'), false); showEl(q$(stage, '.gteach')); q$(stage, '.gteach').scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
+    case 'finalrecite': showEl(b.closest('.recite'), false); showEl(q$(stage, '.finish')); document.getElementById('prog-' + stage.closest('.gp').id.slice(3)).textContent = '進度：完成 🎉'; break;
+  }
 }
 renderGuided();
 </script></body>
