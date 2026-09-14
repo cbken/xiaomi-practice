@@ -110,6 +110,15 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .sol .st .cn{flex:0 0 auto;font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;white-space:nowrap;margin-top:2px}
 .hintlist{margin:6px 0 0 18px;font-size:14px}
 .ansin{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font:400 16px/1.4 "Noto Sans TC",sans-serif;background:var(--paper);color:var(--ink);margin:6px 0}
+.widget{margin:6px 0}
+.wsvg{max-width:100%;display:block;margin:4px auto;background:#fff;border-radius:8px}
+:root[data-theme="dark"] .wsvg{background:#F7F5F0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .wsvg{background:#F7F5F0}}
+.wsvg .wl{font-size:12.5px;font-weight:600;fill:#222}
+.wsvg .wl2{font-size:13px;font-weight:700;fill:#333}
+.widget input[type=range]{width:100%;margin:4px 0;accent-color:var(--accent)}
+.wcap{font-size:12.5px;color:var(--mute);text-align:center;line-height:1.4}
+.wmsg{font-size:14px;text-align:center;margin-top:4px;min-height:1.4em}
 </style></head><body>
 <header><div class="wrap">
 <div class="brand"><h1>小咪練習室<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div></div>
@@ -184,40 +193,554 @@ function resetSet(key){
   updateScore();
 }
 render();
+// ---------- 16 個觀念的「動手玩」小動畫（重講第 3 層） ----------
+// 每個 widget：html() 產生 SVG + 一支滑桿；update(root, v) 依滑桿值重畫。
+const DEG = Math.PI / 180;
+const GOOD = '#2E8B57', INK = '#222', MUTE = '#888', ORANGE = '#F7B267', BLUE = '#9BB8E8', PINK = '#F3B0A5';
 
-const GUIDED = {"_說明": "引導解題 v2（Ken 9/13 定調）：暖身（問→錯就重講→念口訣）→ 引導步（念口訣→想一小步→看答案→複習+再考）→ 收尾（自算→檢查）→ 總複習（觀念全部再問→口訣連念）。concept 指向 guided_concepts.json。", "_適用": "姊姊 數學第五冊 1-3 相似形／1-4 相似三角形的應用（9/21 課輔小考範圍）", "problems": [{"id": "p1", "title": "題 1・兩個正三角形，求 CF", "source": "講義 1-4 相似三角形的應用・老師講解 15", "stem": "如圖，△ABC、△CDE 均為正三角形，且 C 在 BD 上。若 △ABC 與 △CDE 的周長分別為 24 和 15，則 CF ＝ ？（F 是 BE 與 AC 的交點）", "figure": "<svg viewBox='0 0 360 190' width='360' style='max-width:100%;display:block;margin:6px auto'><polygon points='30,160 190,160 110,21' fill='#DDE3F3' stroke='#222' stroke-width='1.5'/><polygon points='190,160 290,160 240,73' fill='#F3E1DA' stroke='#222' stroke-width='1.5'/><line x1='30' y1='160' x2='240' y2='73' stroke='#222' stroke-width='1.5'/><circle cx='149.5' cy='92.5' r='3' fill='#222'/><text x='105' y='15' font-size='15' font-style='italic'>A</text><text x='14' y='172' font-size='15' font-style='italic'>B</text><text x='184' y='180' font-size='15' font-style='italic'>C</text><text x='294' y='172' font-size='15' font-style='italic'>D</text><text x='238' y='66' font-size='15' font-style='italic'>E</text><text x='153' y='88' font-size='15' font-style='italic'>F</text></svg>", "warmup": [{"concept": "eq60", "q": "正三角形的三個角，各是幾度？", "a": "都是 60°"}, {"concept": "perim", "q": "周長 24 的正三角形，一邊多長？", "a": "8（24÷3）"}, {"concept": "corr", "q": "兩條線跟第三條線的「同位角」相等，這兩條線是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個三角形相似，它們的「對應邊」有什麼關係？", "a": "成比例（比值一樣）"}], "steps": [{"concept": "perim", "guide": "先把兩個三角形的邊長寫在圖上。△ABC 的邊長是？△CDE 的邊長是？", "answer": "8 和 5", "why": "24÷3＝8，15÷3＝5。", "quiz": {"q": "周長 27 的正三角形，邊長是？", "a": "9"}}, {"concept": "eq60", "guide": "∠ACB 幾度？∠EDC 幾度？", "answer": "都是 60°", "why": "兩個都是正三角形的角。", "quiz": {"q": "∠ABC 是幾度？", "a": "60°"}}, {"concept": "corr", "guide": "AC 和 ED 這兩條線，跟底線 BD 的夾角都是 60°。那 AC 和 ED 是什麼關係？", "answer": "平行（AC ∥ ED）", "why": "∠ACB 和 ∠EDC 是同位角，都 60° → 相等 → 平行。", "quiz": {"q": "如果一個是 60°、一個是 70°，AC 和 ED 還平行嗎？", "a": "不平行"}}, {"concept": "par_sim", "guide": "有平行線就會有相似三角形。找找看：哪兩個三角形共用 B 這個角，而且一個的邊在 AC 上、另一個的邊在 ED 上？", "answer": "△BCF 和 △BDE", "why": "小的：B、C、F；大的：B、D、E。都從 B 出發。∠B 共用、∠BCF＝∠BDE（同位角）→ AA 相似。對應點：B→B、C→D、F→E。", "quiz": {"q": "小三角形的 F 對到大三角形（△BDE）的哪一點？", "a": "E"}}, {"concept": "collinear", "guide": "把對應邊寫成比例：BC 對 BD、CF 對 DE。BC、BD、DE 各是多少？", "answer": "BC＝8、BD＝13、DE＝5", "why": "BD 是 BC＋CD＝8＋5＝13。⚠️ 最常錯：BD 不是 8 也不是 5。", "quiz": {"q": "如果兩個正三角形邊長是 6 和 4，BD 是多少？", "a": "10"}}], "final": {"concept": "sim_ratio", "guide": "BC：BD ＝ CF：DE，也就是 8：13 ＝ CF：5。CF 自己算出來。", "answer": "CF ＝ 40/13", "why": "CF ＝ 5×8÷13 ＝ 40/13。", "check": "CF 應該比 AC（＝8）短。40/13 ≈ 3.1，合理 ✓", "concepts": ["eq60", "perim", "corr", "par_sim", "collinear", "sim_ratio"]}}, {"id": "p2", "title": "題 2・兩個正方形，求 DH", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，正方形 ABCD 與正方形 CEFG 的面積分別為 81 cm² 和 9 cm²，且 AF 與 DG 交於 H 點，則 DH ＝ ？", "figure": "<svg viewBox='0 0 300 230' width='300' style='max-width:100%;display:block;margin:6px auto'><rect x='40' y='30' width='180' height='180' fill='#FFF6C8' stroke='#222' stroke-width='1.5'/><rect x='220' y='150' width='60' height='60' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><line x1='40' y1='30' x2='280' y2='150' stroke='#222' stroke-width='1.5'/><circle cx='220' cy='120' r='3' fill='#222'/><text x='24' y='24' font-size='15' font-style='italic'>A</text><text x='224' y='24' font-size='15' font-style='italic'>D</text><text x='24' y='222' font-size='15' font-style='italic'>B</text><text x='210' y='226' font-size='15' font-style='italic'>C</text><text x='226' y='116' font-size='15' font-style='italic'>H</text><text x='204' y='146' font-size='15' font-style='italic'>G</text><text x='284' y='154' font-size='15' font-style='italic'>F</text><text x='284' y='218' font-size='15' font-style='italic'>E</text></svg>", "warmup": [{"concept": "area_sqrt", "q": "正方形的面積是 81，一邊多長？", "a": "9"}, {"concept": "sq_sides", "q": "正方形的四個邊、四個角有什麼關係？", "a": "四邊一樣長、四角都 90°"}, {"concept": "perp_par", "q": "兩條線都跟同一條線垂直，它們是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個相似三角形，一組對應邊 9 和 3，另一組對應邊 6 和多少？", "a": "2（都是 3 倍）"}], "steps": [{"concept": "area_sqrt", "guide": "先把兩個正方形的邊長寫在圖上。大的邊長？小的邊長？", "answer": "9 和 3", "why": "9×9＝81，3×3＝9。", "quiz": {"q": "面積 64 的正方形，邊長？", "a": "8"}}, {"concept": "collinear", "guide": "H 在哪條線上？D、H、G、C 四個點是不是在同一條直線上？", "answer": "是，都在 DC 這條邊上", "why": "G 是小正方形的頂點，剛好落在大正方形的邊 DC 上；H 是 AF 穿過 DC 的地方。", "quiz": {"q": "DG 這一段有多長？（DC 減掉 CG）", "a": "9－3＝6"}}, {"concept": "perp_par", "guide": "AD 是大正方形的上邊、FG 是小正方形的上邊，兩條都是橫的。它們是什麼關係？", "answer": "平行（AD ∥ FG）", "why": "都跟 DC 垂直 → 互相平行。", "quiz": {"q": "AB 和 FE 平行嗎？", "a": "平行"}}, {"concept": "x_sim", "guide": "有平行線就找相似三角形。AF 這條斜線切過 AD 和 FG，H 是交叉點。哪兩個三角形相似？（講義的 Key 也在提示你）", "answer": "△ADH ∼ △FGH", "why": "∠ADH＝∠FGH＝90°，∠AHD＝∠FHG（對頂角）→ AA 相似。對應點：A→F、D→G、H→H。", "quiz": {"q": "對頂角（交叉點兩邊相對的角）相不相等？", "a": "相等"}}, {"concept": "sim_ratio", "guide": "對應邊寫成比例：AD 對 FG，DH 對 GH。AD、FG 各多長？比例是多少？", "answer": "AD＝9、FG＝3，所以 DH：GH＝9：3＝3：1", "why": "相似比就是 9：3。⚠️ DH 和 GH 加起來才是 DG（＝6）。", "quiz": {"q": "DH：GH＝3：1 的意思是把 DG 分成幾份？", "a": "4 份（3＋1）"}}], "final": {"concept": "ratio_split", "guide": "DH：GH＝3：1，DH＋GH＝6。DH 自己算出來。", "answer": "DH ＝ 4.5 cm（9/2）", "why": "一份＝6÷4＝1.5，DH 是 3 份＝4.5。", "check": "DH 應該比 DG（＝6）短、比 GH 長。4.5 合理 ✓", "concepts": ["area_sqrt", "sq_sides", "perp_par", "x_sim", "sim_ratio", "ratio_split"]}}, {"id": "p3", "title": "題 3・直角三角形裡的正方形，求 QC", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，△ABC 中 ∠B＝90°，P、Q、R、S 四點在各邊上，且四邊形 PQRS 為正方形。若 AP＝18、PQ＝12，求 QC 的長度。", "figure": "<svg viewBox='0 0 200 240' width='220' style='max-width:100%;display:block;margin:6px auto'><polygon points='40,20 116,172 40,210' fill='none' stroke='#222' stroke-width='1.5'/><polygon points='40,128.6 94.3,128.6 94.3,182.9 40,182.9' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><polyline points='104,166 110,178 98,184' fill='none' stroke='#222' stroke-width='1'/><text x='26' y='18' font-size='15' font-style='italic'>A</text><text x='122' y='178' font-size='15' font-style='italic'>B</text><text x='26' y='224' font-size='15' font-style='italic'>C</text><text x='22' y='132' font-size='15' font-style='italic'>P</text><text x='22' y='190' font-size='15' font-style='italic'>Q</text><text x='98' y='198' font-size='15' font-style='italic'>R</text><text x='98' y='124' font-size='15' font-style='italic'>S</text></svg>", "figure_note": "（圖照講義重畫：直角在 B，P、Q 在 AC 上，S 在 AB 上，R 在 BC 上）", "warmup": [{"concept": "sq_sides", "q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°"}, {"concept": "right_acute", "q": "直角三角形裡，兩個銳角加起來幾度？", "a": "90°"}, {"concept": "AA", "q": "兩個直角三角形，只要再有一個銳角相等，它們就？", "a": "相似（AA）"}, {"concept": "sim_ratio", "q": "△甲∼△乙，甲的邊 18 對乙的 12；甲的另一邊 12 對乙的多少？", "a": "8"}], "steps": [{"concept": "sq_sides", "guide": "正方形 PQRS 的邊長是多少？PS 和 QR 各多長？", "answer": "都是 12", "why": "PQ＝12，正方形四邊一樣。", "quiz": {"q": "SR 多長？", "a": "12"}}, {"concept": "sq_sides", "guide": "看小三角形 △APS：它的直角在哪一點？△RQC 的直角在哪一點？", "answer": "△APS 在 P、△RQC 在 Q", "why": "∠APS、∠RQC 都是正方形的角，90°。", "quiz": {"q": "∠PSR 幾度？", "a": "90°"}}, {"concept": "right_acute", "guide": "△APS 的 ∠A，和 △RQC 的 ∠C，有什麼關係？", "answer": "加起來 90°", "why": "大三角形 ABC 的 ∠B＝90°，兩個銳角 ∠A＋∠C＝90°。", "quiz": {"q": "∠A＝35°，∠C 幾度？", "a": "55°"}}, {"concept": "cofunc", "guide": "再看 △RQC：∠QRC 和 ∠C 加起來也是 90°。那 ∠A 和 ∠QRC 有什麼關係？", "answer": "相等", "why": "都等於 90°－∠C。", "quiz": {"q": "∠x＋∠C＝90°、∠y＋∠C＝90°，∠x 和 ∠y 相等嗎？", "a": "相等"}}, {"concept": "sim_order", "guide": "現在 △APS 和 △RQC 都有直角、又有一組銳角相等 → 相似。把對應點對好：A 對誰？P 對誰？S 對誰？", "answer": "A→R、P→Q、S→C，寫成 △APS ∼ △RQC", "why": "直角對直角（P→Q）、相等的銳角對（A→R）、剩下的（S→C）。順序寫錯，比例就會反。", "quiz": {"q": "AP 對到另一個三角形（△RQC）的哪一邊？", "a": "RQ"}}], "final": {"concept": "sim_ratio", "guide": "對應邊成比例：AP：RQ ＝ PS：QC，也就是 18：12 ＝ 12：QC。QC 自己算出來。", "answer": "QC ＝ 8", "why": "QC＝12×12÷18＝8。", "check": "18：12 是 3：2，那 12：QC 也要 3：2 → QC＝8 ✓（交叉相乘：18×QC＝144）", "concepts": ["sq_sides", "right_acute", "cofunc", "AA", "sim_order", "sim_ratio"]}}]};
-const CONCEPTS = {"eq60": {"name": "正三角形每個角都是 60°", "teach": "正三角形＝三邊一樣長的三角形。三邊一樣長，三個角就一樣大。任何三角形的三個角加起來都是 180°，三個一樣大 → 每個 180÷3＝60°。不管這個正三角形是大是小，角永遠都是 60°。", "recap": "正三角形：三邊等長、三角都 60°，跟大小無關。", "confirm": {"q": "用你的話說：為什麼正三角形的角一定是 60°？", "a": "三個角一樣大，加起來 180°，所以一個 60°。"}, "retest": {"q": "一個邊長 100 的超大正三角形，它的角是幾度？", "a": "還是 60°。"}, "jingle": "正三角形，三邊等、三角六十"}, "perim": {"name": "邊長＝周長÷3", "teach": "周長＝繞一圈的總長度＝三邊加起來。正三角形三邊一樣長，所以周長＝3×邊長。反過來，知道周長要找邊長，就是周長÷3。例：周長 24 → 24÷3＝8。", "recap": "正三角形：周長＝3×邊長，邊長＝周長÷3。", "confirm": {"q": "周長 24 的正三角形，為什麼邊長是 8 而不是 12？", "a": "因為有三邊，要除以 3；除以 2 是兩邊的。"}, "retest": {"q": "周長 36 的正三角形，邊長多少？", "a": "12"}, "jingle": "周長除三，就是邊"}, "corr": {"name": "同位角相等 → 平行", "teach": "一條線（截線）穿過兩條線，會做出很多角。「同位角」＝在兩個交叉點上「同一個位置」的角（都在右上，或都在左下）。如果兩個同位角一樣大，那兩條線就是平行的。想像鐵軌：兩條軌道平行，枕木斜斜切過去，切出來的角在兩邊是一樣的。", "recap": "同位角相等 ⇔ 兩線平行。", "confirm": {"q": "「同位角」是什麼意思？用你的話說。", "a": "截線切過兩條線，兩邊位置相同的那一對角。"}, "retest": {"q": "截線切過兩條線，右上角的角一個是 50°、另一個也是 50°，這兩條線平行嗎？", "a": "平行（同位角相等）。"}, "jingle": "同位角相等，兩線就平行", "alt": "換個方式記：「F 型」。截線和上面那條線、截線和下面那條線，各自圍出一個角落；兩個角落在截線的同一邊、都在線的上方（或都在下方）——像大寫 F 的兩個橫槓跟直槓夾出來的兩個角。那一對就是同位角。兩條線平行時，這兩個 F 角落一模一樣大。", "pre": [{"q": "什麼是「截線」？", "a": "穿過另外兩條線的第三條線（像斜斜切過鐵軌的枕木）。"}, {"q": "角的「位置」怎麼看？", "a": "看它在截線的左邊還是右邊、在那條線的上面還是下面。「右上」「左下」這樣叫。同位角＝兩個交叉點上位置一樣的角。"}], "widget": "corr", "ask": "我卡在【同位角相等→平行】，可以教我嗎？"}, "sim_ratio": {"name": "相似三角形：對應邊成比例", "teach": "兩個三角形「相似」＝形狀一樣、大小不一定一樣（像照片放大縮小）。放大幾倍，每一邊都放大同樣的倍數，所以「對應邊」的比是固定的。例：小三角形邊 3、4、5，放大 2 倍變 6、8、10，每一組都是 1：2。寫比例時，小的對小的、大的對大的，順序不能亂。", "recap": "相似 → 對應邊比值全部一樣（放大倍數）。", "confirm": {"q": "兩個相似三角形，一組對應邊是 4 和 8，另一組對應邊是 5 和多少？", "a": "10（都是 2 倍）。"}, "retest": {"q": "△甲∼△乙，甲的邊 6 對乙的邊 9。甲另一邊 10 對乙的邊多少？", "a": "15（6：9＝10：15，1.5 倍）。"}, "jingle": "相似三角形，對應邊成比例"}, "par_sim": {"name": "有平行線 → 找相似三角形", "teach": "只要圖裡有一組平行線被兩條斜線切到，就會出現兩個相似三角形。原因：平行線做出同位角（或內錯角）相等，再加上共用的角 → 兩個角相等 → AA 相似。所以看到「平行」兩個字，下一步就是找兩個三角形寫比例。", "recap": "平行 → 角相等 → 相似 → 寫比例。", "confirm": {"q": "為什麼有平行線就會有相似三角形？", "a": "平行線讓對應的角相等，兩個角相等就相似。"}, "retest": {"q": "△ABC 中，DE ∥ BC（D 在 AB 上、E 在 AC 上）。哪兩個三角形相似？", "a": "△ADE ∼ △ABC。"}, "jingle": "看到平行線，就找相似三角形"}, "area_sqrt": {"name": "正方形面積 → 邊長（開根號）", "teach": "正方形面積＝邊×邊。反過來要從面積找邊長，就要問「什麼數自己乘自己會等於它」，這叫開根號。常用的要背：1、4、9、16、25、36、49、64、81、100 → 邊長 1～10。例：81＝9×9 → 邊長 9。", "recap": "面積＝邊²，邊長＝√面積。", "confirm": {"q": "面積 9 的正方形，邊長為什麼是 3 不是 4.5？", "a": "因為 3×3＝9；4.5 是 9 除以 2，不是自己乘自己。"}, "retest": {"q": "面積 49 的正方形，邊長？", "a": "7"}, "jingle": "面積開根號，就是邊長"}, "sq_sides": {"name": "正方形：四邊等長、四角 90°", "teach": "正方形的定義就是四個邊一樣長、四個角都是直角（90°）。所以題目只要給你一邊，四邊你都知道了；正方形貼著的三角形，也會多出一個 90° 的角。", "recap": "正方形：四邊等長、四角直角。", "confirm": {"q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°。"}, "retest": {"q": "正方形一邊是 7，周長多少？", "a": "28"}, "jingle": "四邊一樣長，四角九十度"}, "perp_par": {"name": "同時垂直同一條線 → 互相平行", "teach": "兩條線如果都跟第三條線垂直（都是 90°），它們一定互相平行，永遠不會碰到。例：兩個正方形都靠在同一條底線上，它們「直的邊」都跟底線垂直，所以那些邊互相平行。", "recap": "都垂直同一條線 → 平行。", "confirm": {"q": "為什麼大正方形的邊 AD 和小正方形的邊 FG 會平行？", "a": "它們都跟 DC 這條線垂直。"}, "retest": {"q": "地板上立兩根柱子，兩根都跟地板垂直，兩根柱子是什麼關係？", "a": "平行"}, "jingle": "都垂直同一條，彼此就平行"}, "vert": {"name": "對頂角相等", "teach": "兩條線交叉成一個 X，交叉點兩邊「對面」的那一對角叫對頂角，它們永遠一樣大。例：X 的上面那個角 40°，下面那個也是 40°。", "recap": "X 交叉：對面的角相等。", "confirm": {"q": "兩條線交叉，一個角是 70°，它對面的角幾度？", "a": "70°"}, "retest": {"q": "AF 和 DG 交於 H，∠AHD 和 ∠FHG 相等嗎？為什麼？", "a": "相等，對頂角。"}, "jingle": "交叉對面角，永遠一樣大"}, "AA": {"name": "AA 相似：兩個角相等就相似", "teach": "要判斷兩個三角形相似，不用三個角都檢查——三角形三個角加起來 180°，兩個角相等，第三個自動相等。所以「找到兩組相等的角」就可以說它們相似，這叫 AA 相似。常見來源：共用的角、對頂角、同位角、直角。", "recap": "兩組角相等 → 相似（AA）。", "confirm": {"q": "為什麼只要兩個角相等就夠了？", "a": "第三個角＝180° 減前兩個，一定也相等。"}, "retest": {"q": "△甲有角 50°、60°；△乙有角 60°、70°。它們相似嗎？", "a": "相似（甲的第三角是 70°，兩組角都對上）。"}, "jingle": "兩角相等，就是相似"}, "x_sim": {"name": "X 形相似", "teach": "兩條平行線被兩條斜線交叉成一個 X，交叉點上下（或左右）兩個三角形一定相似：因為對頂角相等、平行線的內錯角相等 → AA。對應點要照「相對」的位置對：上面的左點對下面的右點。", "recap": "平行線 + 交叉 → X 兩邊三角形相似。", "confirm": {"q": "X 形相似的兩組相等的角是哪兩組？", "a": "交叉點的對頂角、平行線的內錯角。"}, "retest": {"q": "AD ∥ FG，AF 與 DG 交於 H。哪兩個三角形相似？", "a": "△ADH ∼ △FGH"}, "jingle": "平行加交叉，X 兩邊相似"}, "ratio_split": {"name": "把一段依比例分開", "teach": "一段長 6 要分成 3：1，就是分成 4 份，一份＝6÷4＝1.5，大的拿 3 份＝4.5，小的 1 份＝1.5。做法：先把比例的數字加起來當「總份數」，再算一份多少。", "recap": "分 a：b → 總份數 a＋b，一份＝全長÷(a＋b)。", "confirm": {"q": "把 6 分成 3：1，為什麼要除以 4 而不是除以 3？", "a": "3 份加 1 份共 4 份。"}, "retest": {"q": "把 20 分成 2：3，大的那份多少？", "a": "12（一份 4，3 份 12）。"}, "jingle": "份數先加總，一份是多少"}, "right_acute": {"name": "直角三角形：兩個銳角相加 90°", "teach": "三角形三個角加起來 180°。直角三角形已經有一個 90°，剩下兩個角只能分 90°。所以知道一個銳角，另一個就是 90° 減它。", "recap": "直角三角形：銳角 + 銳角 = 90°。", "confirm": {"q": "為什麼直角三角形的兩個銳角加起來剛好 90°？", "a": "180° 扣掉直角 90°。"}, "retest": {"q": "∠A＝28°，另一個銳角幾度？", "a": "62°"}, "jingle": "直角三角形，兩銳角湊九十"}, "cofunc": {"name": "同角的餘角相等", "teach": "兩個角都「跟同一個角湊成 90°」，那這兩個角一定一樣大。例：∠x＋∠C＝90°，∠y＋∠C＝90° → ∠x＝∠y（都是 90°－∠C）。這招在「直角三角形裡放正方形」的題目裡幾乎每題都用到。", "recap": "跟同一個角湊 90° 的兩個角相等。", "confirm": {"q": "∠A 和 ∠QRC 都跟 ∠C 湊成 90°，所以？", "a": "∠A＝∠QRC。"}, "retest": {"q": "∠1＋∠3＝90°、∠2＋∠3＝90°，∠1 和 ∠2 的關係？", "a": "相等"}, "jingle": "跟同一角湊九十，兩個角相等"}, "sim_order": {"name": "相似要照對應順序寫", "teach": "寫 △APS ∼ △RQC 的時候，字母的順序就是對應：A 對 R、P 對 Q、S 對 C。對的方法：直角對直角、相等的銳角對相等的銳角、剩下的對剩下的。順序寫對，比例式就是把對應的邊照順序放：AP：RQ＝PS：QC＝AS：RC。", "recap": "相似的字母順序＝對應關係，比例照順序寫。", "confirm": {"q": "△APS ∼ △RQC，P 對到誰？為什麼？", "a": "Q，因為兩個都是直角。"}, "retest": {"q": "△ABC ∼ △DEF，AB 對哪一邊？BC 對哪一邊？", "a": "AB 對 DE，BC 對 EF。"}, "jingle": "相似照順序，字母對字母"}, "collinear": {"name": "先看哪些點在同一條線上", "teach": "寫比例前要先確定「哪幾個點在同一條直線上」，線段才能加減。例：D、H、G、C 都在 DC 這條邊上，所以 DG＝DC－CG，DH＋HG＝DG。", "recap": "同一直線上的點，線段可以加減。", "confirm": {"q": "G 在 DC 上、CG＝3、DC＝9，DG 多長？", "a": "6"}, "retest": {"q": "B、C、D 在一直線上，BC＝8、CD＝5，BD 多長？", "a": "13"}, "jingle": "同一條線上，線段能加減"}};
-const mastered = new Set();   // 跨題：前面 ✓ 過的觀念
-let NID = 0;
+function sector(px, py, r, a1, a2) {
+  const x1 = px + r * Math.cos(a1 * DEG), y1 = py - r * Math.sin(a1 * DEG);
+  const x2 = px + r * Math.cos(a2 * DEG), y2 = py - r * Math.sin(a2 * DEG);
+  const big = (a2 - a1) > 180 ? 1 : 0;
+  return `M${px.toFixed(1)},${py.toFixed(1)} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${big} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`;
+}
+// 從 p 看向 q 的角度（數學慣例，螢幕 y 已翻轉）
+function ang(p, q) { let a = Math.atan2(-(q[1] - p[1]), q[0] - p[0]) / DEG; return (a + 360) % 360; }
+// 以 p 為頂點、夾在 pq1 與 pq2 之間的「內角」扇形
+function arc(p, r, q1, q2) {
+  let a1 = ang(p, q1), a2 = ang(p, q2);
+  if (a2 < a1) a2 += 360;
+  if (a2 - a1 > 180) { const t = a1; a1 = a2 - 360; a2 = t; }
+  return sector(p[0], p[1], r, a1, a2);
+}
+function angDeg(p, q1, q2) { let d = Math.abs(ang(p, q1) - ang(p, q2)); if (d > 180) d = 360 - d; return d; }
+// 直角符號
+function rightMark(v, a, b, s) {
+  const u1 = norm(sub(a, v)), u2 = norm(sub(b, v));
+  const p1 = add(v, mul(u1, s)), p2 = add(add(v, mul(u1, s)), mul(u2, s)), p3 = add(v, mul(u2, s));
+  return `${p1[0].toFixed(1)},${p1[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)} ${p3[0].toFixed(1)},${p3[1].toFixed(1)}`;
+}
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const mul = (a, k) => [a[0] * k, a[1] * k];
+const len = a => Math.hypot(a[0], a[1]);
+const norm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
+const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+const pt = a => `${a[0].toFixed(1)},${a[1].toFixed(1)}`;
 
-// ---------- 動手玩的小動畫（第 3 層） ----------
-function sector(px, py, r, a1, a2) { const R = Math.PI / 180; const x1 = px + r * Math.cos(a1 * R), y1 = py - r * Math.sin(a1 * R), x2 = px + r * Math.cos(a2 * R), y2 = py - r * Math.sin(a2 * R); return `M${px},${py} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`; }
+function wrap(name, inner, slider, cap) {
+  return `<div class="widget" data-w="${name}">
+    <svg viewBox="0 0 320 210" class="wsvg" width="320">${inner}</svg>
+    ${slider}<div class="wcap">${cap}</div><div class="wmsg"></div></div>`;
+}
+function slider(name, min, max, val, label, step) {
+  return `<input type="range" min="${min}" max="${max}" value="${val}" ${step ? `step="${step}"` : ''} data-widget="${name}" aria-label="${label}" style="width:100%">`;
+}
+function setTxt(root, sel, x, y, t, opt = {}) {
+  const e = root.querySelector(sel); if (!e) return;
+  e.setAttribute('x', x.toFixed ? x.toFixed(1) : x); e.setAttribute('y', y.toFixed ? y.toFixed(1) : y);
+  e.textContent = t; if (opt.fill) e.setAttribute('fill', opt.fill);
+}
+function msg(root, t, good) {
+  const m = root.querySelector('.wmsg'); m.textContent = t || '';
+  m.style.color = good ? GOOD : 'var(--mute)'; m.style.fontWeight = good ? '700' : '500';
+}
+
 const WIDGETS = {
+
+  // ① 正三角形每個角都是 60°
+  eq60: {
+    html() {
+      return wrap('eq60',
+        `<polygon class="tri" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <path class="k1" fill="${ORANGE}" opacity=".85"/><path class="k2" fill="${ORANGE}" opacity=".85"/><path class="k3" fill="${ORANGE}" opacity=".85"/>
+         <text class="t1 wl"></text><text class="t2 wl"></text><text class="t3 wl"></text><text class="ts wl2"></text>`,
+        slider('eq60', 40, 130, 80, '調整正三角形的大小'),
+        '← 拖拉，把正三角形變大變小 →　看三個角會不會跟著變');
+    },
+    update(root, s) {
+      const cx = 160, by = 170, h = s * Math.sqrt(3) / 2;
+      const B = [cx - s / 2, by], C = [cx + s / 2, by], A = [cx, by - h];
+      root.querySelector('.tri').setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+      const r = Math.max(14, Math.min(24, s / 4));
+      root.querySelector('.k1').setAttribute('d', arc(A, r, B, C));
+      root.querySelector('.k2').setAttribute('d', arc(B, r, C, A));
+      root.querySelector('.k3').setAttribute('d', arc(C, r, A, B));
+      setTxt(root, '.t1', A[0] - 13, A[1] + r + 16, '60°');
+      setTxt(root, '.t2', B[0] + 6, B[1] - r - 4, '60°');
+      setTxt(root, '.t3', C[0] - 32, C[1] - r - 4, '60°');
+      setTxt(root, '.ts', 160, 196, `邊長 ${(s / 10).toFixed(1)} 公分`);
+      root.querySelector('.ts').setAttribute('text-anchor', 'middle');
+      msg(root, '不管拉多大多小，三個角永遠都是 60° ✓', true);
+    }
+  },
+
+  // ② 邊長 = 周長 ÷ 3
+  perim: {
+    html() {
+      return wrap('perim',
+        `<polygon class="tri" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <text class="s1 wl"></text><text class="s2 wl"></text><text class="s3 wl"></text>
+         <text class="eq wl2" x="160" y="198" text-anchor="middle"></text>`,
+        slider('perim', 3, 15, 8, '調整邊長'),
+        '← 拖拉改變邊長 →　看周長怎麼跟著變');
+    },
+    update(root, a) {
+      const s = a * 9, cx = 160, by = 165, h = s * Math.sqrt(3) / 2;
+      const B = [cx - s / 2, by], C = [cx + s / 2, by], A = [cx, by - h];
+      root.querySelector('.tri').setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+      const m1 = mid(A, B), m2 = mid(A, C), m3 = mid(B, C);
+      setTxt(root, '.s1', m1[0] - 26, m1[1], `${a}`);
+      setTxt(root, '.s2', m2[0] + 12, m2[1], `${a}`);
+      setTxt(root, '.s3', m3[0] - 6, m3[1] + 17, `${a}`);
+      root.querySelector('.eq').textContent = `周長 ＝ ${a}＋${a}＋${a} ＝ 3 × ${a} ＝ ${3 * a}`;
+      msg(root, `反過來：周長 ${3 * a} ÷ 3 ＝ 邊長 ${a}`, true);
+    }
+  },
+
+  // ③ 同位角相等 → 平行
   corr: {
-    html(id) { return `<div class="widget" data-w="corr"><svg viewBox="0 0 320 215" width="320" style="max-width:100%;display:block;margin:4px auto">
-      <line x1="20" y1="60" x2="300" y2="60" class="l1" stroke="#222" stroke-width="2"/>
-      <line class="l2" x1="0" y1="0" x2="0" y2="0" stroke="#222" stroke-width="2"/>
-      <line x1="90" y1="20" x2="210" y2="180" stroke="#888" stroke-width="2" stroke-dasharray="4 3"/>
-      <path class="a1" d="" fill="#F7B267" opacity=".85"/><path class="a2" d="" fill="#F7B267" opacity=".85"/>
-      <text class="t1" x="150" y="80" font-size="12" fill="#222"></text><text class="t2" x="212" y="160" font-size="12" fill="#222"></text>
-      <text x="220" y="18" font-size="11" fill="#888">截線</text>
-      <text class="st" x="160" y="206" font-size="14" text-anchor="middle" font-weight="700" fill="#2E8B57"></text></svg>
-      <input type="range" min="-30" max="30" value="22" data-widget="corr" aria-label="轉動下面那條線" style="width:100%">
-      <div style="font-size:13px;color:var(--mute);text-align:center">← 轉動下面那條線 →　目標：讓兩個橘色的角（同位角）一樣大</div></div>`; },
+    html() {
+      return wrap('corr',
+        `<line class="l1" x1="20" y1="62" x2="300" y2="62" stroke="${INK}" stroke-width="2"/>
+         <line class="l2" stroke="${INK}" stroke-width="2"/>
+         <line x1="85" y1="18" x2="215" y2="192" stroke="${MUTE}" stroke-width="2" stroke-dasharray="4 3"/>
+         <path class="a1" fill="${ORANGE}" opacity=".85"/><path class="a2" fill="${ORANGE}" opacity=".85"/>
+         <text class="t1 wl"></text><text class="t2 wl"></text>
+         <text x="222" y="16" font-size="11" fill="${MUTE}">截線</text>`,
+        slider('corr', -30, 30, 22, '轉動下面那條線'),
+        '← 轉動下面那條線 →　目標：讓兩個橘色的角（同位角）一樣大');
+    },
     update(root, th) {
-      const P1 = [120, 60], P2 = [180, 140], base = -53.13; const R = Math.PI / 180;
-      const dx = 140 * Math.cos(th * R), dy = 140 * Math.sin(th * R);
-      const l2 = root.querySelector('.l2'); l2.setAttribute('x1', P2[0] - dx); l2.setAttribute('y1', P2[1] + dy); l2.setAttribute('x2', P2[0] + dx); l2.setAttribute('y2', P2[1] - dy);
-      root.querySelector('.a1').setAttribute('d', sector(P1[0], P1[1], 24, 0, base));
-      root.querySelector('.a2').setAttribute('d', sector(P2[0], P2[1], 24, th, base));
+      const P1 = [120, 62], P2 = [180, 142], base = -53.2;
+      const dx = 140 * Math.cos(th * DEG), dy = 140 * Math.sin(th * DEG);
+      const l2 = root.querySelector('.l2');
+      l2.setAttribute('x1', (P2[0] - dx).toFixed(1)); l2.setAttribute('y1', (P2[1] + dy).toFixed(1));
+      l2.setAttribute('x2', (P2[0] + dx).toFixed(1)); l2.setAttribute('y2', (P2[1] - dy).toFixed(1));
+      root.querySelector('.a1').setAttribute('d', sector(P1[0], P1[1], 24, base, 0));
+      root.querySelector('.a2').setAttribute('d', sector(P2[0], P2[1], 24, base, th));
       const top = -base, bot = th - base;
-      root.querySelector('.t1').textContent = `上面的角 ${top.toFixed(0)}°`; root.querySelector('.t2').textContent = `下面的角 ${bot.toFixed(0)}°`;
-      const ok = Math.abs(th) <= 1; const col = ok ? '#2E8B57' : '#222';
+      setTxt(root, '.t1', 150, 84, `上面的角 ${top.toFixed(0)}°`);
+      setTxt(root, '.t2', 206, 162, `下面的角 ${bot.toFixed(0)}°`);
+      const ok = Math.abs(th) <= 1, col = ok ? GOOD : INK;
       root.querySelector('.l1').setAttribute('stroke', col); l2.setAttribute('stroke', col);
-      root.querySelector('.st').textContent = ok ? '平行了！兩個同位角一樣大 ✓' : (Math.abs(th) <= 5 ? '快了…再轉一點點' : '');
+      msg(root, ok ? '平行了！兩個同位角一樣大 ✓' : (Math.abs(th) <= 5 ? '快了…再轉一點點' : '兩個角不一樣大 → 還不平行'), ok);
+    }
+  },
+
+  // ④ 相似三角形對應邊成比例
+  sim_ratio: {
+    html() {
+      return wrap('sim_ratio',
+        `<polygon class="t1" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <polygon class="t2" points="" fill="${PINK}" stroke="${INK}" stroke-width="1.5"/>
+         <text class="a1 wl"></text><text class="b1 wl"></text><text class="c1 wl"></text>
+         <text class="a2 wl"></text><text class="b2 wl"></text><text class="c2 wl"></text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('sim_ratio', 10, 25, 18, '調整放大倍數', 1),
+        '← 拖拉把右邊那個放大縮小 →　看三組對應邊的比值');
+    },
+    update(root, kk) {
+      const k = kk / 10;
+      const draw = (ox, oy, u, cls) => {
+        const A = [ox, oy], B = [ox + 3 * u, oy], C = [ox, oy - 4 * u];
+        root.querySelector('.' + cls).setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+        return [A, B, C];
+      };
+      const [A1, B1, C1] = draw(30, 170, 13, 't1');
+      const [A2, B2, C2] = draw(155, 170, 13 * k, 't2');
+      setTxt(root, '.a1', (A1[0] + B1[0]) / 2 - 4, A1[1] + 15, '3');
+      setTxt(root, '.b1', A1[0] - 14, (A1[1] + C1[1]) / 2, '4');
+      setTxt(root, '.c1', (B1[0] + C1[0]) / 2 + 2, (B1[1] + C1[1]) / 2 - 4, '5');
+      setTxt(root, '.a2', (A2[0] + B2[0]) / 2 - 10, A2[1] + 15, (3 * k).toFixed(1));
+      setTxt(root, '.b2', A2[0] - 22, (A2[1] + C2[1]) / 2, (4 * k).toFixed(1));
+      setTxt(root, '.c2', (B2[0] + C2[0]) / 2 + 2, (B2[1] + C2[1]) / 2 - 4, (5 * k).toFixed(1));
+      root.querySelector('.eq').textContent =
+        `${(3 * k).toFixed(1)}÷3 ＝ ${(4 * k).toFixed(1)}÷4 ＝ ${(5 * k).toFixed(1)}÷5 ＝ ${k.toFixed(1)}`;
+      msg(root, `三組對應邊的比值都是 ${k.toFixed(1)}，一組都不會例外 ✓`, true);
+    }
+  },
+
+  // ⑤ 有平行線 → 找相似三角形（分步淡入）
+  par_sim: {
+    html() {
+      return wrap('par_sim',
+        `<polygon class="big" points="30,165 290,165 245,78" fill="none" stroke="none"/>
+         <polygon class="fillB" points="" fill="${PINK}" opacity="0"/>
+         <polygon class="fillS" points="" fill="${BLUE}" opacity="0"/>
+         <polygon points="30,165 190,165 110,26" fill="none" stroke="${INK}" stroke-width="1.5"/>
+         <polygon points="190,165 290,165 240,78" fill="none" stroke="${INK}" stroke-width="1.5"/>
+         <line x1="30" y1="165" x2="240" y2="78" stroke="${INK}" stroke-width="1.5"/>
+         <line class="pAC" x1="110" y1="26" x2="190" y2="165" stroke="${ORANGE}" stroke-width="4" opacity="0"/>
+         <line class="pED" x1="240" y1="78" x2="290" y2="165" stroke="${ORANGE}" stroke-width="4" opacity="0"/>
+         <text x="104" y="20" class="wl">A</text><text x="16" y="177" class="wl">B</text>
+         <text x="185" y="181" class="wl">C</text><text x="294" y="177" class="wl">D</text>
+         <text x="238" y="71" class="wl">E</text><text class="fl wl">F</text>
+         <text class="st wl2" x="160" y="200" text-anchor="middle" style="font-size:11.5px"></text>`,
+        slider('par_sim', 1, 4, 1, '一步一步看', 1),
+        '← 一步一步拖 →　看「平行線」怎麼變出「相似三角形」');
+    },
+    update(root, step) {
+      // AC 與 BE 的交點 F
+      const A = [110, 26], C = [190, 165], B = [30, 165], E = [240, 78], D = [290, 165];
+      const den = (A[0] - C[0]) * (B[1] - E[1]) - (A[1] - C[1]) * (B[0] - E[0]);
+      const t = ((A[0] - B[0]) * (B[1] - E[1]) - (A[1] - B[1]) * (B[0] - E[0])) / den;
+      const F = [A[0] + t * (C[0] - A[0]), A[1] + t * (C[1] - A[1])];
+      setTxt(root, '.fl', F[0] + 5, F[1] - 5, 'F');
+      const o = (sel, v) => root.querySelector(sel).setAttribute('opacity', v);
+      o('.pAC', step >= 2 ? 1 : 0); o('.pED', step >= 2 ? 1 : 0);
+      root.querySelector('.fillS').setAttribute('points', `${pt(B)} ${pt(C)} ${pt(F)}`);
+      root.querySelector('.fillB').setAttribute('points', `${pt(B)} ${pt(D)} ${pt(E)}`);
+      o('.fillB', step >= 4 ? 0.75 : 0); o('.fillS', step >= 3 ? 0.85 : 0);
+      const txt = ['', '這是原本的圖：兩個正三角形靠在 BD 上',
+        '第 1 步：AC 和 ED 跟底線的夾角都 60° → 平行',
+        '第 2 步：有平行線 → 看到藍色的小三角形 △BCF',
+        '第 3 步：它和粉紅 △BDE 相似 → BC：BD＝CF：DE'][step];
+      root.querySelector('.st').textContent = txt;
+      msg(root, step >= 4 ? '看到了嗎？平行 → 相似 → 就能寫比例式 ✓' : '往右拖，看下一步', step >= 4);
+    }
+  },
+
+  // ⑥ 面積 → 邊長（開根號）
+  area_sqrt: {
+    html() {
+      return wrap('area_sqrt',
+        `<g class="grid"></g>
+         <rect class="sq" fill="none" stroke="${INK}" stroke-width="2"/>
+         <text class="sl wl"></text><text class="sb wl"></text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('area_sqrt', 1, 10, 4, '調整邊長'),
+        '← 拖拉改變邊長 →　數數看格子有幾個（＝面積）');
+    },
+    update(root, a) {
+      const u = 15, x0 = 90, y0 = 172 - a * u;
+      const sq = root.querySelector('.sq');
+      sq.setAttribute('x', x0); sq.setAttribute('y', y0); sq.setAttribute('width', a * u); sq.setAttribute('height', a * u);
+      let g = '';
+      for (let i = 0; i <= a; i++) {
+        g += `<line x1="${x0 + i * u}" y1="${y0}" x2="${x0 + i * u}" y2="${y0 + a * u}" stroke="${BLUE}" stroke-width="1"/>`;
+        g += `<line x1="${x0}" y1="${y0 + i * u}" x2="${x0 + a * u}" y2="${y0 + i * u}" stroke="${BLUE}" stroke-width="1"/>`;
+      }
+      root.querySelector('.grid').innerHTML = g;
+      setTxt(root, '.sl', x0 - 18, y0 + a * u / 2, `${a}`);
+      setTxt(root, '.sb', x0 + a * u / 2 - 4, y0 + a * u + 16, `${a}`);
+      root.querySelector('.eq').textContent = `面積 ＝ ${a} × ${a} ＝ ${a * a}`;
+      msg(root, `所以看到面積 ${a * a}，開根號就得到邊長 ${a}`, true);
+    }
+  },
+
+  // ⑦ 正方形：四邊等長、四角 90°
+  sq_sides: {
+    html() {
+      return wrap('sq_sides',
+        `<rect class="sq" fill="${BLUE}" stroke="${INK}" stroke-width="2"/>
+         <g class="marks"></g>
+         <text class="s1 wl"></text><text class="s2 wl"></text><text class="s3 wl"></text><text class="s4 wl"></text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('sq_sides', 3, 12, 7, '調整正方形大小'),
+        '← 拖拉改變正方形大小 →　四個邊、四個角會不會變？');
+    },
+    update(root, a) {
+      const u = 11, s = a * u, x0 = 160 - s / 2, y0 = 170 - s;
+      const sq = root.querySelector('.sq');
+      sq.setAttribute('x', x0); sq.setAttribute('y', y0); sq.setAttribute('width', s); sq.setAttribute('height', s);
+      const m = 9;
+      root.querySelector('.marks').innerHTML = [[x0, y0, 1, 1], [x0 + s, y0, -1, 1], [x0, y0 + s, 1, -1], [x0 + s, y0 + s, -1, -1]]
+        .map(([x, y, dx, dy]) => `<polyline points="${x + dx * m},${y} ${x + dx * m},${y + dy * m} ${x},${y + dy * m}" fill="none" stroke="${INK}" stroke-width="1.2"/>`).join('');
+      setTxt(root, '.s1', x0 + s / 2 - 4, y0 - 6, `${a}`);
+      setTxt(root, '.s2', x0 + s + 6, y0 + s / 2, `${a}`);
+      setTxt(root, '.s3', x0 + s / 2 - 4, y0 + s + 16, `${a}`);
+      setTxt(root, '.s4', x0 - 16, y0 + s / 2, `${a}`);
+      root.querySelector('.eq').textContent = `四個邊都是 ${a}　四個角都是 90°　周長 ＝ 4 × ${a} ＝ ${4 * a}`;
+      msg(root, '不管大小，正方形永遠四邊一樣長、四角都是直角 ✓', true);
+    }
+  },
+
+  // ⑧ 同時垂直同一條線 → 互相平行
+  perp_par: {
+    html() {
+      return wrap('perp_par',
+        `<line x1="20" y1="170" x2="300" y2="170" stroke="${INK}" stroke-width="2.5"/>
+         <line class="v1" x1="110" y1="170" x2="110" y2="45" stroke="${INK}" stroke-width="2"/>
+         <line class="v2" stroke="${INK}" stroke-width="2"/>
+         <path class="m1" fill="${ORANGE}" opacity=".85"/><path class="m2" fill="${ORANGE}" opacity=".85"/>
+         <text class="t1 wl"></text><text class="t2 wl"></text>
+         <text x="150" y="190" font-size="11" fill="${MUTE}" text-anchor="middle">地板（同一條線）</text>
+         <text class="st wl2" x="160" y="205" text-anchor="middle"></text>`,
+        slider('perp_par', -35, 35, 24, '把右邊那根柱子扳斜'),
+        '← 把右邊那根扳斜 →　目標：兩根都跟地板成 90°');
+    },
+    update(root, t) {
+      const B = [210, 170], L = 125;
+      const top = [B[0] + L * Math.sin(t * DEG), B[1] - L * Math.cos(t * DEG)];
+      const v2 = root.querySelector('.v2');
+      v2.setAttribute('x1', B[0]); v2.setAttribute('y1', B[1]);
+      v2.setAttribute('x2', top[0].toFixed(1)); v2.setAttribute('y2', top[1].toFixed(1));
+      root.querySelector('.m1').setAttribute('d', arc([110, 170], 22, [300, 170], [110, 45]));
+      root.querySelector('.m2').setAttribute('d', arc(B, 22, [300, 170], top));
+      setTxt(root, '.t1', 118, 146, '90°');
+      setTxt(root, '.t2', B[0] + 26, 148, `${(90 - t).toFixed(0)}°`);
+      const ok = Math.abs(t) <= 1, col = ok ? GOOD : INK;
+      root.querySelector('.v1').setAttribute('stroke', col); v2.setAttribute('stroke', col);
+      root.querySelector('.st').textContent = ok ? '兩根都垂直地板 → 互相平行，永遠碰不到' : '右邊那根斜了 → 兩根會相交，不平行';
+      msg(root, ok ? '都垂直同一條線 → 彼此就平行 ✓' : '再扳回來一點', ok);
+    }
+  },
+
+  // ⑨ 對頂角相等
+  vert: {
+    html() {
+      return wrap('vert',
+        `<path class="p1" fill="${ORANGE}" opacity=".85"/><path class="p2" fill="${ORANGE}" opacity=".85"/>
+         <path class="q1" fill="${BLUE}" opacity=".85"/><path class="q2" fill="${BLUE}" opacity=".85"/>
+         <line x1="40" y1="105" x2="280" y2="105" stroke="${INK}" stroke-width="2"/>
+         <line class="l2" stroke="${INK}" stroke-width="2"/>
+         <text class="ta wl"></text><text class="tb wl"></text><text class="tc wl"></text><text class="td wl"></text>
+         <text class="st wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('vert', 20, 80, 55, '轉動其中一條線'),
+        '← 轉動斜的那條線 →　看「對面」的兩個角（同顏色）');
+    },
+    update(root, r) {
+      const O = [160, 105], L = 96;
+      const dx = L * Math.cos(r * DEG), dy = L * Math.sin(r * DEG);
+      const l2 = root.querySelector('.l2');
+      l2.setAttribute('x1', (O[0] - dx).toFixed(1)); l2.setAttribute('y1', (O[1] + dy).toFixed(1));
+      l2.setAttribute('x2', (O[0] + dx).toFixed(1)); l2.setAttribute('y2', (O[1] - dy).toFixed(1));
+      const R = 30;
+      root.querySelector('.p1').setAttribute('d', sector(O[0], O[1], R, 0, r));
+      root.querySelector('.p2').setAttribute('d', sector(O[0], O[1], R, 180, 180 + r));
+      root.querySelector('.q1').setAttribute('d', sector(O[0], O[1], R, r, 180));
+      root.querySelector('.q2').setAttribute('d', sector(O[0], O[1], R, 180 + r, 360));
+      const a = r, b = 180 - r;
+      setTxt(root, '.ta', O[0] + 34, O[1] - 12, `${a}°`, { fill: '#B26A00' });
+      setTxt(root, '.tb', O[0] - 56, O[1] + 20, `${a}°`, { fill: '#B26A00' });
+      setTxt(root, '.tc', O[0] - 62, O[1] - 22, `${b}°`, { fill: '#2A4E8C' });
+      setTxt(root, '.td', O[0] + 30, O[1] + 34, `${b}°`, { fill: '#2A4E8C' });
+      root.querySelector('.st').textContent = `橘色兩個都 ${a}°　藍色兩個都 ${b}°`;
+      msg(root, '怎麼轉，「對面」的那一對永遠一樣大 ✓', true);
+    }
+  },
+
+  // ⑩ AA 相似：兩個角相等就相似
+  AA: {
+    html() {
+      return wrap('AA',
+        `<polygon class="t1" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <polygon class="t2" points="" fill="${PINK}" stroke="${INK}" stroke-width="1.5"/>
+         <text class="a1 wl"></text><text class="b1 wl"></text><text class="a2 wl"></text><text class="b2 wl"></text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('AA', 6, 13, 10, '把右邊那個放大縮小'),
+        '← 把右邊那個三角形放大縮小 →　兩個角固定 50° 和 60°，形狀會變嗎？');
+    },
+    update(root, v) {
+      const shape = (ox, oy, s, cls) => {
+        const A = [ox, oy], B = [ox + 100 * s, oy], C = [ox + 59.2 * s, oy - 70.6 * s];
+        root.querySelector('.' + cls).setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+        return [A, B];
+      };
+      const [A1, B1] = shape(20, 172, 0.62, 't1');
+      const s2 = v / 10;
+      const [A2, B2] = shape(150, 172, s2, 't2');
+      setTxt(root, '.a1', A1[0] + 12, A1[1] - 6, '50°');
+      setTxt(root, '.b1', B1[0] - 30, B1[1] - 6, '60°');
+      setTxt(root, '.a2', A2[0] + 12, A2[1] - 6, '50°');
+      setTxt(root, '.b2', B2[0] - 30, B2[1] - 6, '60°');
+      root.querySelector('.eq').textContent = `大小是 ${(s2 / 0.62).toFixed(2)} 倍，但兩個角都還是 50° 和 60°`;
+      msg(root, '兩組角一樣 → 不管大小，形狀完全一樣 → 相似 ✓', true);
+    }
+  },
+
+  // ⑪ X 形相似
+  x_sim: {
+    html() {
+      return wrap('x_sim',
+        `<polygon class="fT" points="" fill="${BLUE}" opacity=".8"/><polygon class="fB" points="" fill="${PINK}" opacity=".8"/>
+         <line class="top" stroke="${INK}" stroke-width="2.5"/><line class="bot" stroke="${INK}" stroke-width="2.5"/>
+         <line class="x1" stroke="${INK}" stroke-width="1.5"/><line class="x2" stroke="${INK}" stroke-width="1.5"/>
+         <text class="la wl">A</text><text class="lb wl">B</text><text class="lc wl">C</text><text class="ld wl">D</text><text class="lh wl">H</text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle" style="font-size:12px"></text>`,
+        slider('x_sim', 40, 200, 140, '調整下面那條線的長度'),
+        '← 改變下面那條線的長度 →　看上下兩個三角形的比');
+    },
+    update(root, L) {
+      const AB = 100, ytop = 40, ybot = 180, cx = 160;
+      const A = [cx - AB / 2, ytop], B = [cx + AB / 2, ytop];
+      const D = [cx - L / 2, ybot], C = [cx + L / 2, ybot];
+      const hy = ytop + (ybot - ytop) * AB / (AB + L);
+      const H = [cx, hy];
+      const set = (cls, p, q) => { const e = root.querySelector(cls); e.setAttribute('x1', p[0].toFixed(1)); e.setAttribute('y1', p[1].toFixed(1)); e.setAttribute('x2', q[0].toFixed(1)); e.setAttribute('y2', q[1].toFixed(1)); };
+      set('.top', A, B); set('.bot', D, C); set('.x1', A, C); set('.x2', B, D);
+      root.querySelector('.fT').setAttribute('points', `${pt(A)} ${pt(B)} ${pt(H)}`);
+      root.querySelector('.fB').setAttribute('points', `${pt(D)} ${pt(C)} ${pt(H)}`);
+      setTxt(root, '.la', A[0] - 14, A[1] + 4, 'A'); setTxt(root, '.lb', B[0] + 6, B[1] + 4, 'B');
+      setTxt(root, '.ld', D[0] - 14, D[1] + 5, 'D'); setTxt(root, '.lc', C[0] + 6, C[1] + 5, 'C');
+      setTxt(root, '.lh', H[0] + 6, H[1] - 4, 'H');
+      const k = (L / AB).toFixed(2);
+      root.querySelector('.eq').textContent = `AB：DC ＝ 1：${k}，AH：HC 也是 1：${k}`;
+      msg(root, '兩條平行線＋交叉 → X 兩邊的三角形一定相似 ✓', true);
+    }
+  },
+
+  // ⑫ 把一段依比例分開
+  ratio_split: {
+    html() {
+      return wrap('ratio_split',
+        `<rect x="40" y="80" width="240" height="34" fill="#EEE" stroke="${INK}" stroke-width="1.5"/>
+         <rect class="left" y="80" height="34" fill="${ORANGE}" opacity=".85"/>
+         <line class="cut" y1="74" y2="120" stroke="${INK}" stroke-width="2.5"/>
+         <g class="ticks"></g>
+         <text class="tl wl"></text><text class="tr wl"></text>
+         <text x="160" y="70" class="wl2" text-anchor="middle">全長 12</text>
+         <text class="eq wl2" x="160" y="152" text-anchor="middle"></text>
+         <text class="eq2 wl2" x="160" y="176" text-anchor="middle"></text>`,
+        slider('ratio_split', 1, 5, 3, '調整比例', 1),
+        '← 改變比例 →　看「一份」是多少、兩邊各拿幾份');
+    },
+    update(root, a) {
+      const b = 6 - a, x0 = 40, W = 240, cut = x0 + W * a / 6;
+      const l = root.querySelector('.left'); l.setAttribute('x', x0); l.setAttribute('width', (W * a / 6).toFixed(1));
+      const c = root.querySelector('.cut'); c.setAttribute('x1', cut.toFixed(1)); c.setAttribute('x2', cut.toFixed(1));
+      let t = '';
+      for (let i = 1; i < 6; i++) t += `<line x1="${x0 + W * i / 6}" y1="${80}" x2="${x0 + W * i / 6}" y2="${114}" stroke="${MUTE}" stroke-width="1" stroke-dasharray="3 3"/>`;
+      root.querySelector('.ticks').innerHTML = t;
+      setTxt(root, '.tl', (x0 + cut) / 2 - 10, 104, `${2 * a}`);
+      setTxt(root, '.tr', (cut + x0 + W) / 2 - 10, 104, `${2 * b}`);
+      root.querySelector('.eq').textContent = `分成 ${a}：${b} → 總共 ${a}＋${b} ＝ 6 份`;
+      root.querySelector('.eq2').textContent = `一份 ＝ 12 ÷ 6 ＝ 2　→　左邊 ${a} 份＝${2 * a}，右邊 ${b} 份＝${2 * b}`;
+      msg(root, '先把比例的數字加起來當總份數，再算一份多少 ✓', true);
+    }
+  },
+
+  // ⑬ 直角三角形：兩銳角相加 90°
+  right_acute: {
+    html() {
+      return wrap('right_acute',
+        `<polygon class="tri" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <polyline class="rm" fill="none" stroke="${INK}" stroke-width="1.4"/>
+         <path class="ka" fill="${ORANGE}" opacity=".85"/><path class="kc" fill="${PINK}" opacity=".9"/>
+         <text class="ta wl"></text><text class="tc wl"></text>
+         <text class="la wl">A</text><text class="lb wl">B</text><text class="lc wl">C</text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('right_acute', 20, 70, 35, '拉動頂點改變角度'),
+        '← 拉動頂點 →　兩個銳角加起來永遠是多少？');
+    },
+    update(root, Adeg) {
+      const C = [56, 176], hyp = 150;
+      const A = [C[0] + hyp * Math.cos((90 - Adeg) * DEG), C[1] - hyp * Math.sin((90 - Adeg) * DEG)];
+      const B = [A[0], C[1]];
+      root.querySelector('.tri').setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+      root.querySelector('.rm').setAttribute('points', rightMark(B, A, C, 11));
+      root.querySelector('.ka').setAttribute('d', arc(A, 26, B, C));
+      root.querySelector('.kc').setAttribute('d', arc(C, 26, A, B));
+      const Cdeg = 90 - Adeg;
+      setTxt(root, '.ta', A[0] - 34, A[1] + 34, `${Adeg}°`);
+      setTxt(root, '.tc', C[0] + 30, C[1] - 10, `${Cdeg}°`);
+      setTxt(root, '.la', A[0] + 6, A[1] - 4, 'A'); setTxt(root, '.lb', B[0] + 6, B[1] + 16, 'B'); setTxt(root, '.lc', C[0] - 16, C[1] + 14, 'C');
+      root.querySelector('.eq').textContent = `∠A ${Adeg}° ＋ ∠C ${Cdeg}° ＝ 90°`;
+      msg(root, '三個角共 180°，直角先用掉 90° → 兩個銳角只能分剩下的 90° ✓', true);
+    }
+  },
+
+  // ⑭ 同角的餘角相等
+  cofunc: {
+    html() {
+      return wrap('cofunc',
+        `<polygon class="tri" points="" fill="none" stroke="${INK}" stroke-width="1.5"/>
+         <polygon class="small" points="" fill="${BLUE}" opacity=".7" stroke="${INK}" stroke-width="1.2"/>
+         <path class="kA" fill="${ORANGE}" opacity=".9"/><path class="kR" fill="${ORANGE}" opacity=".9"/><path class="kC" fill="${PINK}" opacity=".9"/>
+         <text class="tA wl"></text><text class="tR wl"></text><text class="tC wl"></text>
+         <text class="lA wl">A</text><text class="lB wl">B</text><text class="lC wl">C</text><text class="lQ wl">Q</text><text class="lR wl">R</text>
+         <text class="eq wl2" x="160" y="202" text-anchor="middle"></text>`,
+        slider('cofunc', 25, 60, 40, '改變 ∠C'),
+        '← 改變 ∠C →　看兩個橘色的角（∠A 和 ∠QRC）是不是一直一樣');
+    },
+    update(root, Cdeg) {
+      const C = [50, 178], hyp = 168;
+      const A = [C[0] + hyp * Math.cos(Cdeg * DEG), C[1] - hyp * Math.sin(Cdeg * DEG)];
+      const B = [A[0], C[1]];
+      root.querySelector('.tri').setAttribute('points', `${pt(A)} ${pt(B)} ${pt(C)}`);
+      const qx = C[0] + (B[0] - C[0]) * 0.42, Q = [qx, C[1]];
+      const R = [qx, C[1] - (qx - C[0]) * Math.tan(Cdeg * DEG)];
+      root.querySelector('.small').setAttribute('points', `${pt(C)} ${pt(Q)} ${pt(R)}`);
+      root.querySelector('.kA').setAttribute('d', arc(A, 24, B, C));
+      root.querySelector('.kR').setAttribute('d', arc(R, 20, Q, C));
+      root.querySelector('.kC').setAttribute('d', arc(C, 26, A, B));
+      const rest = 90 - Cdeg;
+      setTxt(root, '.tA', A[0] - 36, A[1] + 32, `${rest}°`, { fill: '#B26A00' });
+      setTxt(root, '.tR', R[0] - 34, R[1] + 22, `${rest}°`, { fill: '#B26A00' });
+      setTxt(root, '.tC', C[0] + 30, C[1] - 8, `${Cdeg}°`, { fill: '#A03B2E' });
+      setTxt(root, '.lA', A[0] + 6, A[1] - 2, 'A'); setTxt(root, '.lB', B[0] + 6, B[1] + 16, 'B');
+      setTxt(root, '.lC', C[0] - 16, C[1] + 14, 'C'); setTxt(root, '.lQ', Q[0] - 4, Q[1] + 16, 'Q'); setTxt(root, '.lR', R[0] + 6, R[1] - 4, 'R');
+      root.querySelector('.eq').textContent = `∠A ＝ 90°－${Cdeg}° ＝ ${rest}°　　∠QRC ＝ 90°－${Cdeg}° ＝ ${rest}°`;
+      msg(root, '兩個角都跟 ∠C 湊成 90° → 它們永遠一樣大 ✓', true);
+    }
+  },
+
+  // ⑮ 相似要照對應順序寫（配對點亮）
+  sim_order: {
+    html() {
+      return wrap('sim_order',
+        `<polygon class="t1" points="" fill="${BLUE}" stroke="${INK}" stroke-width="1.5"/>
+         <polygon class="t2" points="" fill="${PINK}" stroke="${INK}" stroke-width="1.5"/>
+         <circle class="d1" r="7" fill="#D9694F"/><circle class="d2" r="7" fill="#D9694F"/>
+         <text class="n1 wl">A</text><text class="n2 wl">B</text><text class="n3 wl">C</text>
+         <text class="m1 wl">D</text><text class="m2 wl">E</text><text class="m3 wl">F</text>
+         <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
+        slider('sim_order', 0, 2, 0, '一組一組看對應', 1),
+        '← 一組一組拖 →　看小三角形的頂點對到大三角形的哪一個');
+    },
+    update(root, i) {
+      const S = [[30, 160], [110, 160], [72, 96]];
+      const B = [[160, 172], [290, 172], [228, 68]];
+      root.querySelector('.t1').setAttribute('points', S.map(pt).join(' '));
+      root.querySelector('.t2').setAttribute('points', B.map(pt).join(' '));
+      const d1 = root.querySelector('.d1'), d2 = root.querySelector('.d2');
+      d1.setAttribute('cx', S[i][0]); d1.setAttribute('cy', S[i][1]);
+      d2.setAttribute('cx', B[i][0]); d2.setAttribute('cy', B[i][1]);
+      const off = [[-16, 4], [8, 4], [-4, -10]];
+      'ABC'.split('').forEach((L, j) => setTxt(root, '.n' + (j + 1), S[j][0] + off[j][0], S[j][1] + off[j][1], L, { fill: j === i ? '#D9694F' : INK }));
+      'DEF'.split('').forEach((L, j) => setTxt(root, '.m' + (j + 1), B[j][0] + off[j][0], B[j][1] + off[j][1], L, { fill: j === i ? '#D9694F' : INK }));
+      root.querySelector('.eq').textContent = `△ABC ∼ △DEF：${'ABC'[i]} 對 ${'DEF'[i]}`;
+      msg(root, `字母順序就是對應關係，所以邊也照順序配：${'ABC'[i]}${'ABC'[(i + 1) % 3]} 對 ${'DEF'[i]}${'DEF'[(i + 1) % 3]} ✓`, true);
+    }
+  },
+
+  // ⑯ 同一直線上，線段可以加減
+  collinear: {
+    html() {
+      return wrap('collinear',
+        `<line x1="40" y1="110" x2="280" y2="110" stroke="${INK}" stroke-width="2.5"/>
+         <line class="segAB" y1="86" y2="86" stroke="${ORANGE}" stroke-width="7"/>
+         <line class="segBC" y1="86" y2="86" stroke="${BLUE}" stroke-width="7"/>
+         <line x1="40" y1="140" x2="280" y2="140" stroke="#D9694F" stroke-width="7"/>
+         <circle cx="40" cy="110" r="5" fill="${INK}"/><circle cx="280" cy="110" r="5" fill="${INK}"/>
+         <circle class="bd" cy="110" r="5" fill="${INK}"/>
+         <text x="34" y="130" class="wl">A</text><text x="274" y="130" class="wl">C</text><text class="lb wl">B</text>
+         <text class="tab wl"></text><text class="tbc wl"></text>
+         <text x="160" y="158" class="wl2" text-anchor="middle" fill="#D9694F">AC ＝ 12</text>
+         <text class="eq wl2" x="160" y="188" text-anchor="middle"></text>`,
+        slider('collinear', 1, 11, 5, '移動 B 點', 1),
+        '← 移動中間的 B 點 →　看 AB 和 BC 加起來是多少');
+    },
+    update(root, v) {
+      const x0 = 40, u = 20, bx = x0 + u * v;
+      const s = (cls, a, b) => { const e = root.querySelector(cls); e.setAttribute('x1', a); e.setAttribute('x2', b); };
+      s('.segAB', x0, bx); s('.segBC', bx, 280);
+      root.querySelector('.bd').setAttribute('cx', bx);
+      setTxt(root, '.lb', bx - 4, 130, 'B');
+      setTxt(root, '.tab', (x0 + bx) / 2 - 8, 78, `${v}`, { fill: '#B26A00' });
+      setTxt(root, '.tbc', (bx + 280) / 2 - 8, 78, `${12 - v}`, { fill: '#2A4E8C' });
+      root.querySelector('.eq').textContent = `AB ${v} ＋ BC ${12 - v} ＝ AC 12`;
+      msg(root, 'B 怎麼移都一樣：同一條線上的線段可以直接加減 ✓', true);
     }
   }
 };
+
+
+const GUIDED = {"_說明": "引導解題 v2（Ken 9/13 定調）：暖身（問→錯就重講→念口訣）→ 引導步（念口訣→想一小步→看答案→複習+再考）→ 收尾（自算→檢查）→ 總複習（觀念全部再問→口訣連念）。concept 指向 guided_concepts.json。", "_適用": "姊姊 數學第五冊 1-3 相似形／1-4 相似三角形的應用（9/21 課輔小考範圍）", "problems": [{"id": "p1", "title": "題 1・兩個正三角形，求 CF", "source": "講義 1-4 相似三角形的應用・老師講解 15", "stem": "如圖，△ABC、△CDE 均為正三角形，且 C 在 BD 上。若 △ABC 與 △CDE 的周長分別為 24 和 15，則 CF ＝ ？（F 是 BE 與 AC 的交點）", "figure": "<svg viewBox='0 0 360 190' width='360' style='max-width:100%;display:block;margin:6px auto'><polygon points='30,160 190,160 110,21' fill='#DDE3F3' stroke='#222' stroke-width='1.5'/><polygon points='190,160 290,160 240,73' fill='#F3E1DA' stroke='#222' stroke-width='1.5'/><line x1='30' y1='160' x2='240' y2='73' stroke='#222' stroke-width='1.5'/><circle cx='149.5' cy='92.5' r='3' fill='#222'/><text x='105' y='15' font-size='15' font-style='italic'>A</text><text x='14' y='172' font-size='15' font-style='italic'>B</text><text x='184' y='180' font-size='15' font-style='italic'>C</text><text x='294' y='172' font-size='15' font-style='italic'>D</text><text x='238' y='66' font-size='15' font-style='italic'>E</text><text x='153' y='88' font-size='15' font-style='italic'>F</text></svg>", "warmup": [{"concept": "eq60", "q": "正三角形的三個角，各是幾度？", "a": "都是 60°"}, {"concept": "perim", "q": "周長 24 的正三角形，一邊多長？", "a": "8（24÷3）"}, {"concept": "corr", "q": "兩條線跟第三條線的「同位角」相等，這兩條線是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個三角形相似，它們的「對應邊」有什麼關係？", "a": "成比例（比值一樣）"}], "steps": [{"concept": "perim", "guide": "先把兩個三角形的邊長寫在圖上。△ABC 的邊長是？△CDE 的邊長是？", "answer": "8 和 5", "why": "24÷3＝8，15÷3＝5。", "quiz": {"q": "周長 27 的正三角形，邊長是？", "a": "9"}}, {"concept": "eq60", "guide": "∠ACB 幾度？∠EDC 幾度？", "answer": "都是 60°", "why": "兩個都是正三角形的角。", "quiz": {"q": "∠ABC 是幾度？", "a": "60°"}}, {"concept": "corr", "guide": "AC 和 ED 這兩條線，跟底線 BD 的夾角都是 60°。那 AC 和 ED 是什麼關係？", "answer": "平行（AC ∥ ED）", "why": "∠ACB 和 ∠EDC 是同位角，都 60° → 相等 → 平行。", "quiz": {"q": "如果一個是 60°、一個是 70°，AC 和 ED 還平行嗎？", "a": "不平行"}}, {"concept": "par_sim", "guide": "有平行線就會有相似三角形。找找看：哪兩個三角形共用 B 這個角，而且一個的邊在 AC 上、另一個的邊在 ED 上？", "answer": "△BCF 和 △BDE", "why": "小的：B、C、F；大的：B、D、E。都從 B 出發。∠B 共用、∠BCF＝∠BDE（同位角）→ AA 相似。對應點：B→B、C→D、F→E。", "quiz": {"q": "小三角形的 F 對到大三角形（△BDE）的哪一點？", "a": "E"}}, {"concept": "collinear", "guide": "把對應邊寫成比例：BC 對 BD、CF 對 DE。BC、BD、DE 各是多少？", "answer": "BC＝8、BD＝13、DE＝5", "why": "BD 是 BC＋CD＝8＋5＝13。⚠️ 最常錯：BD 不是 8 也不是 5。", "quiz": {"q": "如果兩個正三角形邊長是 6 和 4，BD 是多少？", "a": "10"}}], "final": {"concept": "sim_ratio", "guide": "BC：BD ＝ CF：DE，也就是 8：13 ＝ CF：5。CF 自己算出來。", "answer": "CF ＝ 40/13", "why": "CF ＝ 5×8÷13 ＝ 40/13。", "check": "CF 應該比 AC（＝8）短。40/13 ≈ 3.1，合理 ✓", "concepts": ["eq60", "perim", "corr", "par_sim", "collinear", "sim_ratio"]}}, {"id": "p2", "title": "題 2・兩個正方形，求 DH", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，正方形 ABCD 與正方形 CEFG 的面積分別為 81 cm² 和 9 cm²，且 AF 與 DG 交於 H 點，則 DH ＝ ？", "figure": "<svg viewBox='0 0 300 230' width='300' style='max-width:100%;display:block;margin:6px auto'><rect x='40' y='30' width='180' height='180' fill='#FFF6C8' stroke='#222' stroke-width='1.5'/><rect x='220' y='150' width='60' height='60' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><line x1='40' y1='30' x2='280' y2='150' stroke='#222' stroke-width='1.5'/><circle cx='220' cy='120' r='3' fill='#222'/><text x='24' y='24' font-size='15' font-style='italic'>A</text><text x='224' y='24' font-size='15' font-style='italic'>D</text><text x='24' y='222' font-size='15' font-style='italic'>B</text><text x='210' y='226' font-size='15' font-style='italic'>C</text><text x='226' y='116' font-size='15' font-style='italic'>H</text><text x='204' y='146' font-size='15' font-style='italic'>G</text><text x='284' y='154' font-size='15' font-style='italic'>F</text><text x='284' y='218' font-size='15' font-style='italic'>E</text></svg>", "warmup": [{"concept": "area_sqrt", "q": "正方形的面積是 81，一邊多長？", "a": "9"}, {"concept": "sq_sides", "q": "正方形的四個邊、四個角有什麼關係？", "a": "四邊一樣長、四角都 90°"}, {"concept": "perp_par", "q": "兩條線都跟同一條線垂直，它們是什麼關係？", "a": "平行"}, {"concept": "sim_ratio", "q": "兩個相似三角形，一組對應邊 9 和 3，另一組對應邊 6 和多少？", "a": "2（都是 3 倍）"}], "steps": [{"concept": "area_sqrt", "guide": "先把兩個正方形的邊長寫在圖上。大的邊長？小的邊長？", "answer": "9 和 3", "why": "9×9＝81，3×3＝9。", "quiz": {"q": "面積 64 的正方形，邊長？", "a": "8"}}, {"concept": "collinear", "guide": "H 在哪條線上？D、H、G、C 四個點是不是在同一條直線上？", "answer": "是，都在 DC 這條邊上", "why": "G 是小正方形的頂點，剛好落在大正方形的邊 DC 上；H 是 AF 穿過 DC 的地方。", "quiz": {"q": "DG 這一段有多長？（DC 減掉 CG）", "a": "9－3＝6"}}, {"concept": "perp_par", "guide": "AD 是大正方形的上邊、FG 是小正方形的上邊，兩條都是橫的。它們是什麼關係？", "answer": "平行（AD ∥ FG）", "why": "都跟 DC 垂直 → 互相平行。", "quiz": {"q": "AB 和 FE 平行嗎？", "a": "平行"}}, {"concept": "x_sim", "guide": "有平行線就找相似三角形。AF 這條斜線切過 AD 和 FG，H 是交叉點。哪兩個三角形相似？（講義的 Key 也在提示你）", "answer": "△ADH ∼ △FGH", "why": "∠ADH＝∠FGH＝90°，∠AHD＝∠FHG（對頂角）→ AA 相似。對應點：A→F、D→G、H→H。", "quiz": {"q": "對頂角（交叉點兩邊相對的角）相不相等？", "a": "相等"}}, {"concept": "sim_ratio", "guide": "對應邊寫成比例：AD 對 FG，DH 對 GH。AD、FG 各多長？比例是多少？", "answer": "AD＝9、FG＝3，所以 DH：GH＝9：3＝3：1", "why": "相似比就是 9：3。⚠️ DH 和 GH 加起來才是 DG（＝6）。", "quiz": {"q": "DH：GH＝3：1 的意思是把 DG 分成幾份？", "a": "4 份（3＋1）"}}], "final": {"concept": "ratio_split", "guide": "DH：GH＝3：1，DH＋GH＝6。DH 自己算出來。", "answer": "DH ＝ 4.5 cm（9/2）", "why": "一份＝6÷4＝1.5，DH 是 3 份＝4.5。", "check": "DH 應該比 DG（＝6）短、比 GH 長。4.5 合理 ✓", "concepts": ["area_sqrt", "sq_sides", "perp_par", "x_sim", "sim_ratio", "ratio_split"]}}, {"id": "p3", "title": "題 3・直角三角形裡的正方形，求 QC", "source": "講義 1-4 相似三角形的應用・學生練習", "stem": "如圖，△ABC 中 ∠B＝90°，P、Q、R、S 四點在各邊上，且四邊形 PQRS 為正方形。若 AP＝18、PQ＝12，求 QC 的長度。", "figure": "<svg viewBox='0 0 200 240' width='220' style='max-width:100%;display:block;margin:6px auto'><polygon points='40,20 116,172 40,210' fill='none' stroke='#222' stroke-width='1.5'/><polygon points='40,128.6 94.3,128.6 94.3,182.9 40,182.9' fill='#F3D2CC' stroke='#222' stroke-width='1.5'/><polyline points='104,166 110,178 98,184' fill='none' stroke='#222' stroke-width='1'/><text x='26' y='18' font-size='15' font-style='italic'>A</text><text x='122' y='178' font-size='15' font-style='italic'>B</text><text x='26' y='224' font-size='15' font-style='italic'>C</text><text x='22' y='132' font-size='15' font-style='italic'>P</text><text x='22' y='190' font-size='15' font-style='italic'>Q</text><text x='98' y='198' font-size='15' font-style='italic'>R</text><text x='98' y='124' font-size='15' font-style='italic'>S</text></svg>", "figure_note": "（圖照講義重畫：直角在 B，P、Q 在 AC 上，S 在 AB 上，R 在 BC 上）", "warmup": [{"concept": "sq_sides", "q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°"}, {"concept": "right_acute", "q": "直角三角形裡，兩個銳角加起來幾度？", "a": "90°"}, {"concept": "AA", "q": "兩個直角三角形，只要再有一個銳角相等，它們就？", "a": "相似（AA）"}, {"concept": "sim_ratio", "q": "△甲∼△乙，甲的邊 18 對乙的 12；甲的另一邊 12 對乙的多少？", "a": "8"}], "steps": [{"concept": "sq_sides", "guide": "正方形 PQRS 的邊長是多少？PS 和 QR 各多長？", "answer": "都是 12", "why": "PQ＝12，正方形四邊一樣。", "quiz": {"q": "SR 多長？", "a": "12"}}, {"concept": "sq_sides", "guide": "看小三角形 △APS：它的直角在哪一點？△RQC 的直角在哪一點？", "answer": "△APS 在 P、△RQC 在 Q", "why": "∠APS、∠RQC 都是正方形的角，90°。", "quiz": {"q": "∠PSR 幾度？", "a": "90°"}}, {"concept": "right_acute", "guide": "△APS 的 ∠A，和 △RQC 的 ∠C，有什麼關係？", "answer": "加起來 90°", "why": "大三角形 ABC 的 ∠B＝90°，兩個銳角 ∠A＋∠C＝90°。", "quiz": {"q": "∠A＝35°，∠C 幾度？", "a": "55°"}}, {"concept": "cofunc", "guide": "再看 △RQC：∠QRC 和 ∠C 加起來也是 90°。那 ∠A 和 ∠QRC 有什麼關係？", "answer": "相等", "why": "都等於 90°－∠C。", "quiz": {"q": "∠x＋∠C＝90°、∠y＋∠C＝90°，∠x 和 ∠y 相等嗎？", "a": "相等"}}, {"concept": "sim_order", "guide": "現在 △APS 和 △RQC 都有直角、又有一組銳角相等 → 相似。把對應點對好：A 對誰？P 對誰？S 對誰？", "answer": "A→R、P→Q、S→C，寫成 △APS ∼ △RQC", "why": "直角對直角（P→Q）、相等的銳角對（A→R）、剩下的（S→C）。順序寫錯，比例就會反。", "quiz": {"q": "AP 對到另一個三角形（△RQC）的哪一邊？", "a": "RQ"}}], "final": {"concept": "sim_ratio", "guide": "對應邊成比例：AP：RQ ＝ PS：QC，也就是 18：12 ＝ 12：QC。QC 自己算出來。", "answer": "QC ＝ 8", "why": "QC＝12×12÷18＝8。", "check": "18：12 是 3：2，那 12：QC 也要 3：2 → QC＝8 ✓（交叉相乘：18×QC＝144）", "concepts": ["sq_sides", "right_acute", "cofunc", "AA", "sim_order", "sim_ratio"]}}]};
+const CONCEPTS = {"eq60": {"name": "正三角形每個角都是 60°", "teach": "正三角形＝三邊一樣長的三角形。三邊一樣長，三個角就一樣大。任何三角形的三個角加起來都是 180°，三個一樣大 → 每個 180÷3＝60°。不管這個正三角形是大是小，角永遠都是 60°。", "recap": "正三角形：三邊等長、三角都 60°，跟大小無關。", "confirm": {"q": "用你的話說：為什麼正三角形的角一定是 60°？", "a": "三個角一樣大，加起來 180°，所以一個 60°。"}, "retest": {"q": "一個邊長 100 的超大正三角形，它的角是幾度？", "a": "還是 60°。"}, "jingle": "正三角形，三邊等、三角六十", "alt": "換個方式記：正三角形就是「最公平」的三角形——三條邊一樣長，所以三個角也一定被分得一樣大。三角形的三個角加起來永遠 180°，公平分成三份就是 180÷3＝60。它跟大小完全無關：邊長 1 公分和邊長 100 公尺的正三角形，角都是 60°。", "pre": [{"q": "任何三角形的三個角加起來是幾度？", "a": "180°。"}, {"q": "「三邊一樣長」會造成什麼結果？", "a": "三個角也一樣大（邊愈長，它對面的角愈大；三邊一樣長，角就一樣大）。"}], "widget": "eq60", "ask": "我卡在【正三角形每個角都是 60°】，可以教我嗎？"}, "perim": {"name": "邊長＝周長÷3", "teach": "周長＝繞一圈的總長度＝三邊加起來。正三角形三邊一樣長，所以周長＝3×邊長。反過來，知道周長要找邊長，就是周長÷3。例：周長 24 → 24÷3＝8。", "recap": "正三角形：周長＝3×邊長，邊長＝周長÷3。", "confirm": {"q": "周長 24 的正三角形，為什麼邊長是 8 而不是 12？", "a": "因為有三邊，要除以 3；除以 2 是兩邊的。"}, "retest": {"q": "周長 36 的正三角形，邊長多少？", "a": "12"}, "jingle": "周長除三，就是邊", "alt": "把周長想成「繞著它走一圈的距離」。正三角形有三條一樣長的邊，走一圈就是走了 3 個邊長。所以周長＝3×邊長。題目給你周長要你找邊長，就是倒過來除以 3。", "pre": [{"q": "「周長」是什麼意思？", "a": "沿著圖形的邊繞一圈的總長度。"}, {"q": "3 × 邊長 ＝ 周長，那邊長怎麼求？", "a": "周長 ÷ 3。"}], "widget": "perim", "ask": "我卡在【邊長＝周長÷3】，可以教我嗎？"}, "corr": {"name": "同位角相等 → 平行", "teach": "一條線（截線）穿過兩條線，會做出很多角。「同位角」＝在兩個交叉點上「同一個位置」的角（都在右上，或都在左下）。如果兩個同位角一樣大，那兩條線就是平行的。想像鐵軌：兩條軌道平行，枕木斜斜切過去，切出來的角在兩邊是一樣的。", "recap": "同位角相等 ⇔ 兩線平行。", "confirm": {"q": "「同位角」是什麼意思？用你的話說。", "a": "截線切過兩條線，兩邊位置相同的那一對角。"}, "retest": {"q": "截線切過兩條線，右上角的角一個是 50°、另一個也是 50°，這兩條線平行嗎？", "a": "平行（同位角相等）。"}, "jingle": "同位角相等，兩線就平行", "alt": "換個方式記：「F 型」。截線和上面那條線、截線和下面那條線，各自圍出一個角落；兩個角落在截線的同一邊、都在線的上方（或都在下方）——像大寫 F 的兩個橫槓跟直槓夾出來的兩個角。那一對就是同位角。兩條線平行時，這兩個 F 角落一模一樣大。", "pre": [{"q": "什麼是「截線」？", "a": "穿過另外兩條線的第三條線（像斜斜切過鐵軌的枕木）。"}, {"q": "角的「位置」怎麼看？", "a": "看它在截線的左邊還是右邊、在那條線的上面還是下面。「右上」「左下」這樣叫。同位角＝兩個交叉點上位置一樣的角。"}], "widget": "corr", "ask": "我卡在【同位角相等→平行】，可以教我嗎？"}, "sim_ratio": {"name": "相似三角形：對應邊成比例", "teach": "兩個三角形「相似」＝形狀一樣、大小不一定一樣（像照片放大縮小）。放大幾倍，每一邊都放大同樣的倍數，所以「對應邊」的比是固定的。例：小三角形邊 3、4、5，放大 2 倍變 6、8、10，每一組都是 1：2。寫比例時，小的對小的、大的對大的，順序不能亂。", "recap": "相似 → 對應邊比值全部一樣（放大倍數）。", "confirm": {"q": "兩個相似三角形，一組對應邊是 4 和 8，另一組對應邊是 5 和多少？", "a": "10（都是 2 倍）。"}, "retest": {"q": "△甲∼△乙，甲的邊 6 對乙的邊 9。甲另一邊 10 對乙的邊多少？", "a": "15（6：9＝10：15，1.5 倍）。"}, "jingle": "相似三角形，對應邊成比例", "alt": "想成手機照片放大。照片放大 2 倍，長變 2 倍、寬也變 2 倍，不會只有一邊變——所以「每一組對應邊的比值都一樣」。那個比值就是放大倍數，也叫相似比。寫比例式時記得小的對小的、大的對大的，順序不能亂。", "pre": [{"q": "「對應邊」是什麼意思？", "a": "兩個相似三角形中，位置相同的那兩條邊（照 △ABC∼△DEF 的字母順序配）。"}, {"q": "一組對應邊是 4 和 8，放大倍數是多少？", "a": "2 倍（8÷4）。"}], "widget": "sim_ratio", "ask": "我卡在【相似三角形：對應邊成比例】，可以教我嗎？"}, "par_sim": {"name": "有平行線 → 找相似三角形", "teach": "只要圖裡有一組平行線被兩條斜線切到，就會出現兩個相似三角形。原因：平行線做出同位角（或內錯角）相等，再加上共用的角 → 兩個角相等 → AA 相似。所以看到「平行」兩個字，下一步就是找兩個三角形寫比例。", "recap": "平行 → 角相等 → 相似 → 寫比例。", "confirm": {"q": "為什麼有平行線就會有相似三角形？", "a": "平行線讓對應的角相等，兩個角相等就相似。"}, "retest": {"q": "△ABC 中，DE ∥ BC（D 在 AB 上、E 在 AC 上）。哪兩個三角形相似？", "a": "△ADE ∼ △ABC。"}, "jingle": "看到平行線，就找相似三角形", "alt": "這是解題的「訊號」不是定理：題目一旦出現平行線，八成就是要你找相似三角形。原因是平行線會製造出相等的角（同位角或內錯角），再加上兩個三角形本來共用的角，湊滿兩組相等的角就相似了。所以看到「∥」，下一個動作就是找兩個三角形。", "pre": [{"q": "兩個角相等的兩個三角形是什麼關係？", "a": "相似（AA）。"}, {"q": "平行線可以幫我們得到什麼？", "a": "相等的角（同位角、內錯角）。"}], "widget": "par_sim", "ask": "我卡在【有平行線 → 找相似三角形】，可以教我嗎？"}, "area_sqrt": {"name": "正方形面積 → 邊長（開根號）", "teach": "正方形面積＝邊×邊。反過來要從面積找邊長，就要問「什麼數自己乘自己會等於它」，這叫開根號。常用的要背：1、4、9、16、25、36、49、64、81、100 → 邊長 1～10。例：81＝9×9 → 邊長 9。", "recap": "面積＝邊²，邊長＝√面積。", "confirm": {"q": "面積 9 的正方形，邊長為什麼是 3 不是 4.5？", "a": "因為 3×3＝9；4.5 是 9 除以 2，不是自己乘自己。"}, "retest": {"q": "面積 49 的正方形，邊長？", "a": "7"}, "jingle": "面積開根號，就是邊長", "alt": "把正方形想成排整齊的小方格：邊長 4 就是 4 排、每排 4 個，共 16 個格子，這 16 就是面積。所以面積＝邊×邊。倒過來，知道面積 16 要找邊長，就是問「什麼數自己乘自己是 16」＝4，這個動作叫開根號。常用的先背起來：4→2、9→3、16→4、25→5、36→6、49→7、64→8、81→9、100→10。", "pre": [{"q": "正方形面積怎麼算？", "a": "邊長 × 邊長。"}, {"q": "什麼數自己乘自己等於 25？", "a": "5。"}], "widget": "area_sqrt", "ask": "我卡在【正方形面積 → 邊長（開根號）】，可以教我嗎？"}, "sq_sides": {"name": "正方形：四邊等長、四角 90°", "teach": "正方形的定義就是四個邊一樣長、四個角都是直角（90°）。所以題目只要給你一邊，四邊你都知道了；正方形貼著的三角形，也會多出一個 90° 的角。", "recap": "正方形：四邊等長、四角直角。", "confirm": {"q": "正方形 PQRS 的 PQ＝12，PS 多長？∠P 幾度？", "a": "PS＝12，∠P＝90°。"}, "retest": {"q": "正方形一邊是 7，周長多少？", "a": "28"}, "jingle": "四邊一樣長，四角九十度", "alt": "正方形的定義就兩句：四個邊一樣長、四個角都是 90°。對解題最有用的是——題目只要給你其中一邊，其他三邊你就全知道了；而且只要有東西貼著正方形，就會多出一個現成的直角可以用。", "pre": [{"q": "正方形和長方形差在哪？", "a": "長方形只保證四個角 90°；正方形還多一個條件：四邊一樣長。"}, {"q": "正方形一邊是 5，另外三邊呢？", "a": "都是 5。"}], "widget": "sq_sides", "ask": "我卡在【正方形：四邊等長、四角 90°】，可以教我嗎？"}, "perp_par": {"name": "同時垂直同一條線 → 互相平行", "teach": "兩條線如果都跟第三條線垂直（都是 90°），它們一定互相平行，永遠不會碰到。例：兩個正方形都靠在同一條底線上，它們「直的邊」都跟底線垂直，所以那些邊互相平行。", "recap": "都垂直同一條線 → 平行。", "confirm": {"q": "為什麼大正方形的邊 AD 和小正方形的邊 FG 會平行？", "a": "它們都跟 DC 這條線垂直。"}, "retest": {"q": "地板上立兩根柱子，兩根都跟地板垂直，兩根柱子是什麼關係？", "a": "平行"}, "jingle": "都垂直同一條，彼此就平行", "alt": "想像地板上立兩根柱子，兩根都跟地板成 90°。它們會不會碰在一起？不會，永遠保持一樣的距離——這就是平行。反過來，只要其中一根歪了，兩根遲早會相交。所以「都垂直同一條線」＝「彼此平行」。", "pre": [{"q": "「垂直」是幾度？", "a": "90°。"}, {"q": "「平行」是什麼意思？", "a": "永遠不會相交、距離一直一樣。"}], "widget": "perp_par", "ask": "我卡在【同時垂直同一條線 → 互相平行】，可以教我嗎？"}, "vert": {"name": "對頂角相等", "teach": "兩條線交叉成一個 X，交叉點兩邊「對面」的那一對角叫對頂角，它們永遠一樣大。例：X 的上面那個角 40°，下面那個也是 40°。", "recap": "X 交叉：對面的角相等。", "confirm": {"q": "兩條線交叉，一個角是 70°，它對面的角幾度？", "a": "70°"}, "retest": {"q": "AF 和 DG 交於 H，∠AHD 和 ∠FHG 相等嗎？為什麼？", "a": "相等，對頂角。"}, "jingle": "交叉對面角，永遠一樣大", "alt": "兩條線交叉會做出一個 X，切出四個角。「對頂角」就是 X 上下那一對、或左右那一對——彼此正對面、只共用一個頂點。它們一定一樣大，因為它們各自跟旁邊那個角湊成一直線的 180°，被減掉的是同一個數。", "pre": [{"q": "一直線是幾度？", "a": "180°。"}, {"q": "∠1＋∠2＝180°、∠3＋∠2＝180°，∠1 和 ∠3 什麼關係？", "a": "相等（都等於 180°－∠2）。"}], "widget": "vert", "ask": "我卡在【對頂角相等】，可以教我嗎？"}, "AA": {"name": "AA 相似：兩個角相等就相似", "teach": "要判斷兩個三角形相似，不用三個角都檢查——三角形三個角加起來 180°，兩個角相等，第三個自動相等。所以「找到兩組相等的角」就可以說它們相似，這叫 AA 相似。常見來源：共用的角、對頂角、同位角、直角。", "recap": "兩組角相等 → 相似（AA）。", "confirm": {"q": "為什麼只要兩個角相等就夠了？", "a": "第三個角＝180° 減前兩個，一定也相等。"}, "retest": {"q": "△甲有角 50°、60°；△乙有角 60°、70°。它們相似嗎？", "a": "相似（甲的第三角是 70°，兩組角都對上）。"}, "jingle": "兩角相等，就是相似", "alt": "為什麼只比兩個角就夠？因為三角形三個角加起來是 180°，前兩個角一樣，第三個角用減的也一定一樣——三個角全部相同，形狀就一模一樣，只差大小。這叫 AA 相似（Angle-Angle）。實戰上，相等的角常來自：共用的角、對頂角、平行線的同位角／內錯角、兩個直角。", "pre": [{"q": "三角形三個角加起來幾度？", "a": "180°。"}, {"q": "甲有 50°、60°，乙有 50°、60°，乙的第三個角是幾度？", "a": "70°（跟甲一樣）。"}], "widget": "AA", "ask": "我卡在【AA 相似：兩個角相等就相似】，可以教我嗎？"}, "x_sim": {"name": "X 形相似", "teach": "兩條平行線被兩條斜線交叉成一個 X，交叉點上下（或左右）兩個三角形一定相似：因為對頂角相等、平行線的內錯角相等 → AA。對應點要照「相對」的位置對：上面的左點對下面的右點。", "recap": "平行線 + 交叉 → X 兩邊三角形相似。", "confirm": {"q": "X 形相似的兩組相等的角是哪兩組？", "a": "交叉點的對頂角、平行線的內錯角。"}, "retest": {"q": "AD ∥ FG，AF 與 DG 交於 H。哪兩個三角形相似？", "a": "△ADH ∼ △FGH"}, "jingle": "平行加交叉，X 兩邊相似", "alt": "兩條平行線被兩條斜線交叉，中間會形成一個 X，X 的上下各有一個三角形——它們一定相似。理由：交叉點是對頂角（相等），平行線給出內錯角（相等），兩組角相等就是 AA。對應點要照「正對面」配：上面的左點對下面的右點。", "pre": [{"q": "對頂角相等嗎？", "a": "相等。"}, {"q": "兩條平行線被一條斜線切，內錯角相等嗎？", "a": "相等。"}], "widget": "x_sim", "ask": "我卡在【X 形相似】，可以教我嗎？"}, "ratio_split": {"name": "把一段依比例分開", "teach": "一段長 6 要分成 3：1，就是分成 4 份，一份＝6÷4＝1.5，大的拿 3 份＝4.5，小的 1 份＝1.5。做法：先把比例的數字加起來當「總份數」，再算一份多少。", "recap": "分 a：b → 總份數 a＋b，一份＝全長÷(a＋b)。", "confirm": {"q": "把 6 分成 3：1，為什麼要除以 4 而不是除以 3？", "a": "3 份加 1 份共 4 份。"}, "retest": {"q": "把 20 分成 2：3，大的那份多少？", "a": "12（一份 4，3 份 12）。"}, "jingle": "份數先加總，一份是多少", "alt": "比例分配就是「分份數」。要把 12 分成 3：1，先問總共幾份——3＋1＝4 份；再問一份多少——12÷4＝3；最後大的拿 3 份＝9、小的拿 1 份＝3。最常錯的是直接除以 3（比例裡的數字），要除的是「總份數」。", "pre": [{"q": "分成 3：1，總共幾份？", "a": "4 份。"}, {"q": "12 分成 4 份，一份多少？", "a": "3。"}], "widget": "ratio_split", "ask": "我卡在【把一段依比例分開】，可以教我嗎？"}, "right_acute": {"name": "直角三角形：兩個銳角相加 90°", "teach": "三角形三個角加起來 180°。直角三角形已經有一個 90°，剩下兩個角只能分 90°。所以知道一個銳角，另一個就是 90° 減它。", "recap": "直角三角形：銳角 + 銳角 = 90°。", "confirm": {"q": "為什麼直角三角形的兩個銳角加起來剛好 90°？", "a": "180° 扣掉直角 90°。"}, "retest": {"q": "∠A＝28°，另一個銳角幾度？", "a": "62°"}, "jingle": "直角三角形，兩銳角湊九十", "alt": "三角形三個角加起來 180°。直角三角形已經有一個角把 90° 用掉了，剩下兩個銳角只能去分剩下的 90°。所以只要知道一個銳角，另一個就是 90° 減它——不用再看圖。", "pre": [{"q": "三角形三個角共幾度？", "a": "180°。"}, {"q": "180° 減掉直角 90°，剩幾度？", "a": "90°。"}], "widget": "right_acute", "ask": "我卡在【直角三角形：兩個銳角相加 90°】，可以教我嗎？"}, "cofunc": {"name": "同角的餘角相等", "teach": "兩個角都「跟同一個角湊成 90°」，那這兩個角一定一樣大。例：∠x＋∠C＝90°，∠y＋∠C＝90° → ∠x＝∠y（都是 90°－∠C）。這招在「直角三角形裡放正方形」的題目裡幾乎每題都用到。", "recap": "跟同一個角湊 90° 的兩個角相等。", "confirm": {"q": "∠A 和 ∠QRC 都跟 ∠C 湊成 90°，所以？", "a": "∠A＝∠QRC。"}, "retest": {"q": "∠1＋∠3＝90°、∠2＋∠3＝90°，∠1 和 ∠2 的關係？", "a": "相等"}, "jingle": "跟同一角湊九十，兩個角相等", "alt": "如果 ∠x 和 ∠C 湊成 90°，∠y 和 ∠C 也湊成 90°，那 ∠x 和 ∠y 一定一樣大——因為它們都等於「90° 減同一個 ∠C」。這招在「直角三角形裡塞一個正方形」的題目幾乎每題都用得到：正方形給你一堆直角，讓好幾個角都跟同一個角湊成 90°。", "pre": [{"q": "「餘角」是什麼？", "a": "兩個角加起來 90°，彼此互為餘角。"}, {"q": "∠C＝40°，它的餘角幾度？", "a": "50°。"}], "widget": "cofunc", "ask": "我卡在【同角的餘角相等】，可以教我嗎？"}, "sim_order": {"name": "相似要照對應順序寫", "teach": "寫 △APS ∼ △RQC 的時候，字母的順序就是對應：A 對 R、P 對 Q、S 對 C。對的方法：直角對直角、相等的銳角對相等的銳角、剩下的對剩下的。順序寫對，比例式就是把對應的邊照順序放：AP：RQ＝PS：QC＝AS：RC。", "recap": "相似的字母順序＝對應關係，比例照順序寫。", "confirm": {"q": "△APS ∼ △RQC，P 對到誰？為什麼？", "a": "Q，因為兩個都是直角。"}, "retest": {"q": "△ABC ∼ △DEF，AB 對哪一邊？BC 對哪一邊？", "a": "AB 對 DE，BC 對 EF。"}, "jingle": "相似照順序，字母對字母", "alt": "寫 △ABC ∼ △DEF 的時候，字母的位置就是在講對應：A 配 D、B 配 E、C 配 F。所以邊也照順序配：AB 對 DE、BC 對 EF、AC 對 DF。配對的方法是先找「一定對得上」的角——直角對直角、相等的銳角對相等的銳角、共用的角對共用的角，剩下的就是最後一組。順序寫反，比例式整個顛倒，答案就會錯。", "pre": [{"q": "△ABC ∼ △DEF，B 對到哪一點？", "a": "E。"}, {"q": "那 AB 對到哪一邊？", "a": "DE。"}], "widget": "sim_order", "ask": "我卡在【相似要照對應順序寫】，可以教我嗎？"}, "collinear": {"name": "先看哪些點在同一條線上", "teach": "寫比例前要先確定「哪幾個點在同一條直線上」，線段才能加減。例：D、H、G、C 都在 DC 這條邊上，所以 DG＝DC－CG，DH＋HG＝DG。", "recap": "同一直線上的點，線段可以加減。", "confirm": {"q": "G 在 DC 上、CG＝3、DC＝9，DG 多長？", "a": "6"}, "retest": {"q": "B、C、D 在一直線上，BC＝8、CD＝5，BD 多長？", "a": "13"}, "jingle": "同一條線上，線段能加減", "alt": "只有「在同一條直線上」的點，線段才能直接加減。所以寫比例式之前，第一件事是看圖確認哪幾個點排在同一條線上，把每一小段的長度標在圖上。像 B、C、D 在一直線上，BD 就是 BC＋CD——最常錯的是把 BD 當成 BC 或 CD 其中一段。", "pre": [{"q": "B、C、D 在同一條線上，BC＝8、CD＝5，BD 多長？", "a": "13（8＋5）。"}, {"q": "G 在 DC 上，DC＝9、CG＝3，DG 多長？", "a": "6（9－3）。"}], "widget": "collinear", "ask": "我卡在【先看哪些點在同一條線上】，可以教我嗎？"}};
+const mastered = new Set();   // 跨題：前面 ✓ 過的觀念
+let NID = 0;
 
 // ---------- 一個「觀念節點」：問 → 看答案 → ✓/✗ → (✗:重講→複習→確認→再考) → 念口訣 → 完成 ----------
 function conceptNode(cid, q, a, opts = {}) {
