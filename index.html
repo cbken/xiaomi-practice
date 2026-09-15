@@ -3159,7 +3159,7 @@ function conceptNode(cid, q, a, opts = {}) {
         ${(c.pre || []).map((pq, k) => `<div class="sub" style="margin-top:6px"><b>先補這個：</b>${esc(pq.q)}<br><button class="gbtn" data-act="prepeek">看答案</button><div class="gans" hidden>${esc(pq.a)}</div></div>`).join('')}
         ${c.widget ? `<button class="gbtn" data-act="layer3" style="margin-top:8px">還是不懂？動手玩玩看 →</button>` : ''}</div>
       <div class="layer" data-layer="3" hidden><div class="tl">②-3 動手玩：自己轉轉看</div>${c.widget ? WIDGETS[c.widget].html(id) : ''}
-        <div class="sub" style="margin-top:8px"><b>還是卡住？來問小咪：</b>打開 Discord 的「貓咪訓練所」，把這句貼上去，小咪會一步一步陪你 → <button class="gbtn" data-act="copyask" data-ask="${esc(c.ask || ('我卡在【' + c.name + '】，可以教我嗎？'))}">複製這句話</button></div></div>` : ''}
+        <div class="sub" style="margin-top:8px"><b>還是卡住？</b>把「${esc(c.name)}」寫在便利貼上、或在作業上把那題圈起來，交給爸爸。不用開 Discord，隔天會有答案。</div></div>` : ''}
       <div class="tl">③ 換你說一次（確認你懂了）</div>
       <div class="sub">${esc(c.confirm.q)}<br><button class="gbtn" data-act="peek2">我說完了，看參考答案</button><div class="gans" hidden><b>參考：</b>${esc(c.confirm.a)}</div>
         <div class="judge2" hidden><button class="gbtn ok" data-act="ok2">✓ 我說得對</button><button class="gbtn ng" data-act="ng2">✗ 還不太行，再講一次</button></div></div>
@@ -3272,7 +3272,6 @@ function onGuidedClick(e) {
     case 'recited': showEl(q$(node, '.recite'), false); nodeDone(node); break;
     case 'layer2': case 'layer3': { showEl(b, false); const layer = b.closest('.teach').querySelector(`.layer[data-layer="${act === 'layer2' ? 2 : 3}"]`); showEl(layer); if (layer) { const w = layer.querySelector('[data-widget]'); if (w) WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value); layer.scrollIntoView({ behavior: 'smooth', block: 'start' }); } break; }
     case 'prepeek': showEl(b, false); showEl(b.nextElementSibling); break;
-    case 'copyask': { const t = b.dataset.ask; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = '已複製 ✓ 去 Discord 貼上'; }).catch(() => { b.textContent = t; }); break; }
     // 引導步
     case 'gate': showEl(b.closest('.gate'), false); showEl(q$(stage, '.guide')); break;
     case 'gpeek': showEl(b, false); showEl(b.nextElementSibling); showEl(q$(stage, '.gjudge')); break;
