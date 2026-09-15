@@ -152,6 +152,12 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .cbox[open] summary{border-bottom:1px dashed var(--line)}
 .cbody{padding:8px 12px 12px}
 .cbody .node{margin-top:6px}
+.rvbox{border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;margin:8px 0 14px;background:var(--accent-soft)}
+.rvhead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:15px}
+.rvsum{font-size:12.5px;color:var(--mute);font-weight:600}
+.rvtip{font-size:12.5px;color:var(--mute);margin:4px 0 6px}
+.cbox.failed{border-color:var(--accent)}
+.cbox.failed .cmark{color:var(--accent)}
 </style></head><body>
 <header><div class="wrap">
 <div class="brand"><h1>小咪練習室<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div></div>
@@ -3107,13 +3113,42 @@ function signalTable() {
 
 
 // ---------- 觀念總表：第五冊每個觀念都能單獨學（問→看答案→✓/✗→重講三層→念口訣） ----------
-const LS_KEY = 'xm_mastered_v1';
-function loadMastered() { try { return new Set(JSON.parse(localStorage.getItem(LS_KEY) || '[]')); } catch (e) { return new Set(); } }
-function saveMastered() { try { localStorage.setItem(LS_KEY, JSON.stringify([...mastered])); } catch (e) {} }
-const everMastered = loadMastered();
+const LS_KEY = 'xm_mastered_v1';           // 舊：只記有沒有過
+const LS2 = 'xm_mastery_v2';                 // 新：{cid:{n, last, next, st}}  st: once / stable / failed
+const DAY = 86400000;
+const today = () => new Date(new Date().toDateString()).getTime();
+function loadMastery() {
+  let m = {}; try { m = JSON.parse(localStorage.getItem(LS2) || '{}') || {}; } catch (e) { m = {}; }
+  try { JSON.parse(localStorage.getItem(LS_KEY) || '[]').forEach(cid => { if (!m[cid]) m[cid] = { n: 1, last: today(), next: today() + 2 * DAY, st: 'once' }; }); } catch (e) {}
+  return m;
+}
+const MASTERY = loadMastery();
+function saveMastery() { try { localStorage.setItem(LS2, JSON.stringify(MASTERY)); localStorage.setItem(LS_KEY, JSON.stringify(Object.keys(MASTERY).filter(k => MASTERY[k].n >= 1))); } catch (e) {} }
+function saveMastered() { saveMastery(); }
+const everMastered = { has: cid => !!(MASTERY[cid] && MASTERY[cid].n >= 1) };
+// 過關：第 1 次 → 2 天後複習；第 2 次 → 7 天後；第 3 次起 → 21 天後（段考前）
+function recordPass(cid) {
+  const m = MASTERY[cid] || { n: 0 }; m.n = (m.n || 0) + 1; m.last = today();
+  m.next = today() + (m.n === 1 ? 2 : m.n === 2 ? 7 : 21) * DAY; m.st = m.n >= 2 ? 'stable' : 'once';
+  MASTERY[cid] = m; saveMastery();
+}
+// 複習時答錯：退回未過關，明天再來
+function recordFail(cid) { MASTERY[cid] = { n: 0, last: today(), next: today() + DAY, st: 'failed' }; saveMastery(); }
+function dueList() { const t = today(); return Object.keys(MASTERY).filter(k => CONCEPTS[k] && MASTERY[k].n >= 1 && MASTERY[k].next <= t); }
+function stateMark(cid) { const m = MASTERY[cid]; if (!m) return ''; return m.st === 'stable' ? '✓✓' : m.st === 'once' ? '✓' : '✗'; }
+function summaryLine() {
+  const v = Object.values(MASTERY); const st = v.filter(m => m.st === 'stable').length, on = v.filter(m => m.st === 'once').length, f = v.filter(m => m.st === 'failed').length;
+  return `✓✓ 穩 ${st}　✓ 過一次 ${on}　✗ 要重學 ${f}　今天該複習 ${dueList().length}`;
+}
+function renderReviewBox() {
+  const due = dueList(); const el = document.getElementById('review-box'); if (!el) return;
+  el.innerHTML = `<div class="rvhead"><b>📅 今天該複習</b><span class="rvsum">${summaryLine()}</span></div>` +
+    (due.length ? `<div class="rvtip">過關 2 天、7 天後會再考一次；答對就更穩，答錯退回去重學。</div>` + due.map(cid => conceptNode(cid, esc(CONCEPTS[cid].retest.q), esc(CONCEPTS[cid].retest.a), { tag: '複習・' + CONCEPTS[cid].name, review: true })).join('')
+      : `<div class="rvtip">今天沒有到期的。去下面點新的觀念，或看章節旁邊的進度。</div>`);
+}
 function chapterProgress(ch) {
   const keys = ch.sections.flatMap(sc => sc.keys).filter(k => CONCEPTS[k]);
-  const done = keys.filter(k => mastered.has(k) || everMastered.has(k)).length;
+  const done = keys.filter(k => everMastered.has(k)).length;
   return `${done}／${keys.length}`;
 }
 function renderConcepts() {
@@ -3121,26 +3156,27 @@ function renderConcepts() {
   const tabs = document.getElementById('tabs'), main = document.getElementById('main');
   const t = document.createElement('button'); t.className = 'tab'; t.role = 'tab'; t.id = 'tab-concepts'; t.textContent = '姊姊・第五冊觀念'; t.setAttribute('aria-selected', 'false'); t.onclick = () => show('concepts'); tabs.appendChild(t);
   const sec = document.createElement('section'); sec.className = 'set'; sec.id = 'set-concepts';
-  let h = `<div class="setsub">第五冊（九上）每一個觀念都在這裡。點開一個 → 先自己想 → 看答案 → 答對就念口訣過關；不會就一層一層重講到會。<br>過關會記在這台手機／電腦上，換裝置不會帶過去。</div>`;
+  let h = `<div class="setsub">第五冊（九上）每一個觀念都在這裡。點開一個 → 先自己想 → 看答案 → 答對就念口訣過關；不會就一層一層重講到會。<br>過關會記在這台手機／電腦上，換裝置不會帶過去。</div><div id="review-box" class="rvbox"></div>`;
   chapters.forEach((ch, ci) => {
     h += `<div class="chap" data-ch="${ci}"><h2>${esc(ch.title)} <span class="chprog" data-chprog="${ci}">${chapterProgress(ch)} 過關</span></h2>`;
     ch.sections.forEach(sc => {
       const keys = sc.keys.filter(k => CONCEPTS[k]); if (!keys.length) return;
       h += `<h3 class="secttl">${esc(sc.title)}</h3>`;
       keys.forEach(k => {
-        const c = CONCEPTS[k]; const was = everMastered.has(k);
-        h += `<details class="cbox${was ? ' was' : ''}" data-cid="${k}"><summary><span class="cname">${esc(c.name)}</span><span class="csee">${c.signal ? '👀 ' + esc(c.signal.see) : ''}</span><span class="cmark">${was ? '✓' : ''}</span></summary>
+        const c = CONCEPTS[k]; const was = everMastered.has(k); const mk = stateMark(k);
+        h += `<details class="cbox${was ? ' was' : ''}${mk === '✗' ? ' failed' : ''}" data-cid="${k}"><summary><span class="cname">${esc(c.name)}</span><span class="csee">${c.signal ? '👀 ' + esc(c.signal.see) : ''}</span><span class="cmark">${mk}</span></summary>
           <div class="cbody">${sigCard(c)}${conceptNode(k, esc(c.confirm.q), esc(c.confirm.a))}</div></details>`;
       });
     });
     h += `</div>`;
   });
-  sec.innerHTML = h; main.appendChild(sec);
+  sec.innerHTML = h; main.appendChild(sec); renderReviewBox();
   sec.addEventListener('click', onGuidedClick);
   sec.addEventListener('input', e => { const w = e.target.closest('[data-widget]'); if (w) WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value); });
 }
 function markConceptBox(cid) {
-  document.querySelectorAll(`.cbox[data-cid="${cid}"]`).forEach(b => { b.classList.add('was'); const m = b.querySelector('.cmark'); if (m) m.textContent = '✓'; });
+  document.querySelectorAll(`.cbox[data-cid="${cid}"]`).forEach(b => { const mk = stateMark(cid); b.classList.toggle('was', mk.startsWith('✓')); b.classList.toggle('failed', mk === '✗'); const m = b.querySelector('.cmark'); if (m) m.textContent = mk; });
+  const rs = document.querySelector('.rvsum'); if (rs) rs.textContent = summaryLine();
   const chapters = GUIDED_C['章節'] || [];
   chapters.forEach((ch, ci) => { const e = document.querySelector(`[data-chprog="${ci}"]`); if (e) e.textContent = chapterProgress(ch) + ' 過關'; });
 }
@@ -3149,7 +3185,7 @@ function markConceptBox(cid) {
 function conceptNode(cid, q, a, opts = {}) {
   const c = CONCEPTS[cid]; const id = 'n' + (++NID);
   const tag = opts.tag ? `<span class="tag">${esc(opts.tag)}</span>` : (mastered.has(cid) ? `<span class="tag">前面 ✓ 過</span>` : '');
-  return `<div class="node" id="${id}" data-cid="${cid}" data-attempts="0">
+  return `<div class="node" id="${id}" data-cid="${cid}" data-attempts="0"${opts.review ? ' data-review="1"' : ''}>
     <div class="qtext">${q}${tag}</div>
     <button class="gbtn" data-act="peek">我想好了，看答案</button>
     <div class="gans" hidden><b>答：</b>${a}</div>
@@ -3231,7 +3267,7 @@ function msgTip(stage, t) { let e = stage.querySelector('.tip'); if (!e) { e = d
 function showEl(el, on = true) { if (el) el.hidden = !on; }
 function nodeDone(node) {
   node.classList.add('done'); showEl(q$(node, '.donemark'));
-  mastered.add(node.dataset.cid); saveMastered(); markConceptBox(node.dataset.cid);
+  mastered.add(node.dataset.cid); recordPass(node.dataset.cid); markConceptBox(node.dataset.cid);
   const stage = node.closest('.stage'); checkStage(stage);
   const gt = node.closest('.gteach'); if (gt) { showEl(gt, false); showEl(q$(gt.parentElement, '.review')); }
 }
@@ -3259,6 +3295,7 @@ function onGuidedClick(e) {
     case 'peek': showEl(b, false); showEl(q$(node, ':scope > .gans')); showEl(q$(node, '.judge')); break;
     case 'ok': showEl(q$(node, '.judge'), false); showEl(q$(node, '.recite')); break;
     case 'ng': case 'ng3': {
+      if (act === 'ng' && node.dataset.review === '1' && !node.dataset.failed) { node.dataset.failed = '1'; recordFail(node.dataset.cid); markConceptBox(node.dataset.cid); }
       showEl(q$(node, '.judge'), false); const t = q$(node, '.teach'); showEl(t);
       const n = +node.dataset.attempts + 1; node.dataset.attempts = n;
       // reset inner
