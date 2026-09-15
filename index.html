@@ -235,7 +235,7 @@ function sector(px, py, r, a1, a2) {
   const x1 = px + r * Math.cos(a1 * DEG), y1 = py - r * Math.sin(a1 * DEG);
   const x2 = px + r * Math.cos(a2 * DEG), y2 = py - r * Math.sin(a2 * DEG);
   const big = (a2 - a1) > 180 ? 1 : 0;
-  return `M${px.toFixed(1)},${py.toFixed(1)} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${big} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`;
+  return `M${px.toFixed(1)},${py.toFixed(1)} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${big} 0 ${x2.toFixed(1)},${y2.toFixed(1)} Z`;  // sweep=0：螢幕 y 向下，數學角逆時針要用 0 才是凸的扇形（widget-B 9/15 抓到）
 }
 // 從 p 看向 q 的角度（數學慣例，螢幕 y 已翻轉）
 function ang(p, q) { let a = Math.atan2(-(q[1] - p[1]), q[0] - p[0]) / DEG; return (a + 360) % 360; }
@@ -1423,6 +1423,9 @@ const WIDGETS = {
 
 };
 
+
+
+
 // ===== g5:A start =====
 Object.assign(WIDGETS, {
 
@@ -1851,24 +1854,24 @@ Object.assign(WIDGETS, {
   sim_height: {
     html() {
       return wrap('sim_height',
-        `<polygon points="14,162 68,162 32.9,126" fill="${BLUE}" opacity=".5" stroke="${INK}" stroke-width="1.5"/>
+        `<polygon points="14,162 92,162 41.3,110" fill="${BLUE}" opacity=".5" stroke="${INK}" stroke-width="1.5"/>
          <polygon class="t2" points="" fill="${PINK}" opacity=".5" stroke="${INK}" stroke-width="1.5"/>
-         <line x1="32.9" y1="126" x2="32.9" y2="162" stroke="#D9694F" stroke-width="2" stroke-dasharray="4 3"/>
+         <line x1="41.3" y1="110" x2="41.3" y2="162" stroke="#D9694F" stroke-width="2" stroke-dasharray="4 3"/>
          <line class="h2" stroke="#D9694F" stroke-width="2" stroke-dasharray="4 3"/>
-         <text class="wl" x="37" y="148" fill="#B0281A">4</text><text class="wl" x="38" y="176">6</text>
+         <text class="wl" x="46" y="140" fill="#B0281A">4</text><text class="wl" x="49" y="176">6</text>
          <text class="nh wl"></text><text class="nb wl"></text>
          <text class="eq wl2" x="160" y="200" text-anchor="middle"></text>`,
         slider('sim_height', 2, 4, 2, '拖相似比 k', 1),
         '← 拖 →　兩個相似三角形，對應高的比就是相似比');
     },
     update(root, v) {
-      const k = v / 2, B2 = [110, 162], C2 = [110 + 27 * v, 162], A2 = [110 + 9.45 * v, 162 - 18 * v];
+      const k = v / 2, B2 = [110, 162], C2 = [110 + 39 * v, 162], A2 = [110 + 13.65 * v, 162 - 26 * v];
       root.querySelector('.t2').setAttribute('points', `${pt(B2)} ${pt(C2)} ${pt(A2)}`);
       const h = root.querySelector('.h2');
       h.setAttribute('x1', A2[0].toFixed(1)); h.setAttribute('y1', A2[1].toFixed(1));
       h.setAttribute('x2', A2[0].toFixed(1)); h.setAttribute('y2', 162);
-      setTxt(root, '.nh', A2[0] + 5, 162 - 9 * v, `${2 * v}`, { fill: '#B0281A' });
-      setTxt(root, '.nb', 110 + 13.5 * v - 6, 176, `${3 * v}`);
+      setTxt(root, '.nh', A2[0] + 5, 162 - 13 * v, `${2 * v}`, { fill: '#B0281A' });
+      setTxt(root, '.nb', 110 + 19.5 * v - 6, 176, `${3 * v}`);
       const kd = k % 1 === 0 ? String(k) : k.toFixed(1);
       root.querySelector('.eq').textContent = `高：${2 * v}÷4 ＝ ${kd}　底：${3 * v}÷6 ＝ ${kd}`;
       msg(root, `對應高的比 ＝ 相似比 ＝ ${kd} ✓`, true);
@@ -1899,7 +1902,7 @@ Object.assign(WIDGETS, {
       if (i === 0) {
         root.querySelector('.kk').setAttribute('d', arc(A, 22, B, C));
         root.querySelector('.rm').setAttribute('points', rightMark(A, B, C, 12));
-        setTxt(root, '.ang', A[0] - 16, A[1] + 40, '90°', { fill: '#A03B2E' });
+        setTxt(root, '.ang', A[0] - 42, A[1] + 34, '90°', { fill: '#A03B2E' });
       } else if (i === 1) {
         root.querySelector('.kk').setAttribute('d', arc(B, 24, C, A));
         root.querySelector('.rm').setAttribute('points', rightMark(D, B, A, 11));
@@ -2059,14 +2062,14 @@ Object.assign(WIDGETS, {
             `<polygon points="36,160 148.6,160 148.6,95" fill="${BLUE}" opacity=".45" stroke="${INK}" stroke-width="1.5"/>` +
             `<polyline points="138.6,160 138.6,150 148.6,150" fill="none" stroke="${INK}" stroke-width="1.2"/>` +
             TXT(70, 124, '2', '#B26A00') + TXT(85, 176, '√3', '#2A4E8C') + TXT(154, 130, '1', '#B0281A') +
-            TXT(58, 154, '30°') + TXT(114, 117, '60°') +
+            TXT(58, 154, '30°') + TXT(124, 129, '60°') +
             TXT(186, 62, 'sin30° ＝ 1/2', '#B0281A') + TXT(186, 92, 'cos30° ＝ √3/2', '#2A4E8C') + TXT(186, 122, 'tan30° ＝ √3/3', '#B26A00');
         } else {
           fig.innerHTML =
             `<polygon points="40,160 140,160 140,60" fill="${PINK}" opacity=".45" stroke="${INK}" stroke-width="1.5"/>` +
             `<polyline points="130,160 130,150 140,150" fill="none" stroke="${INK}" stroke-width="1.2"/>` +
             TXT(64, 106, '√2', '#B26A00') + TXT(86, 176, '1', '#2A4E8C') + TXT(146, 112, '1', '#B0281A') +
-            TXT(62, 154, '45°') + TXT(104, 84, '45°') +
+            TXT(62, 154, '45°') + TXT(116, 100, '45°') +
             TXT(186, 62, 'sin45° ＝ √2/2', '#B0281A') + TXT(186, 92, 'cos45° ＝ √2/2', '#2A4E8C') + TXT(186, 122, 'tan45° ＝ 1', '#B26A00');
         }
       }
@@ -2187,8 +2190,8 @@ Object.assign(WIDGETS, (() => {
       html() {
         return wrap('line_circle',
           `<circle cx="100" cy="100" r="50" fill="none" stroke="${INK}" stroke-width="1.8"/>
-           <line x1="100" y1="100" x2="100" y2="50" stroke="${MUTE}" stroke-width="2"/>
-           <text x="105" y="75" class="wl" fill="${MUTE}">r ＝ 5</text>
+           <line x1="100" y1="100" x2="50" y2="100" stroke="${MUTE}" stroke-width="2"/>
+           <text x="52" y="92" class="wl" fill="${MUTE}">r ＝ 5</text>
            <line class="ln" y1="28" y2="172" stroke-width="2.5"/>
            <line class="dl" y1="100" y2="100" stroke="${ORANGE}" stroke-width="3.5"/>
            <circle cx="100" cy="100" r="4" fill="${INK}"/><text x="84" y="114" class="wl">O</text>
@@ -2215,7 +2218,7 @@ Object.assign(WIDGETS, (() => {
         });
         root.querySelector('.tp').setAttribute('opacity', on ? 1 : 0);
         setTxt(root, '.tp', x + 6, 96, '切點', { fill: GOOD });
-        setTxt(root, '.dt', Math.max(106, (O[0] + x) / 2 - 18), 118, `d ＝ ${d}`, { fill: DOR });
+        setTxt(root, '.dt', (O[0] + x) / 2 - 3, 94, `${d}`, { fill: DOR });
         const st = on ? '相切（碰到 1 點）' : (cut ? '相交（切出 2 個交點）' : '相離（完全沒碰到）');
         const sym = on ? '＝' : (cut ? '＜' : '＞');
         setTxt(root, '.st', 160, 200, `d ＝ ${d} ${sym} r ＝ 5　→　${st}`, { fill: col });
@@ -2645,7 +2648,7 @@ Object.assign(WIDGETS, (() => {
         const mA = mid(P, A), mB = mid(P, B), mC = mid(P, C), mD = mid(P, D);
         setTxt(root, '.na', mA[0] - 5, mA[1] - 8, `${pa}`, { fill: DOR });
         setTxt(root, '.nb', mB[0] - 5, mB[1] - 8, `${pb}`, { fill: DOR });
-        const per = [0.9682, 0.25];
+        const per = [0.9682 * 1.5, 0.25 * 1.5];
         setTxt(root, '.nc', mC[0] + per[0] * 12, mC[1] + per[1] * 12 + 4, `${_n(pc)}`, { fill: DBLUE });
         setTxt(root, '.nd', mD[0] + per[0] * 12, mD[1] + per[1] * 12 + 4, `${_n(pd)}`, { fill: DBLUE });
         const prod = 16 - p * p;
