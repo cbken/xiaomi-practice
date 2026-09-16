@@ -3121,7 +3121,7 @@ function chapterProgress(ch) {
 function renderConcepts() {
   const chapters = GUIDED_C['章節'] || []; if (!chapters.length) return;
   const tabs = document.getElementById('tabs'), main = document.getElementById('main');
-  const t = document.createElement('button'); t.className = 'tab'; t.role = 'tab'; t.id = 'tab-concepts'; t.textContent = '姊姊・第五冊觀念'; t.setAttribute('aria-selected', 'false'); t.onclick = () => show('concepts'); tabs.appendChild(t);
+  const t = document.createElement('button'); t.className = 'tab'; t.role = 'tab'; t.id = 'tab-concepts'; t.textContent = '第五冊觀念'; t.setAttribute('aria-selected', 'false'); t.onclick = () => show('concepts'); tabs.appendChild(t);
   const sec = document.createElement('section'); sec.className = 'set'; sec.id = 'set-concepts';
   let h = `<div class="setsub">第五冊（九上）每一個觀念都在這裡。點開一個 → 先自己想 → 看答案 → 答對就念口訣過關；不會就一層一層重講到會。<br>過關會記在這台手機／電腦上，換裝置不會帶過去。</div><div id="review-box" class="rvbox"></div>`;
   chapters.forEach((ch, ci) => {
@@ -3237,7 +3237,7 @@ function stepStage(p, s, n) {
   </div>`;
 }
 
-function renderGuided(set = GUIDED, key = 'guided', title = '姊姊・引導解題', sigKeys = null, afterTab = null) {
+function renderGuided(set = GUIDED, key = 'guided', title = '引導解題', sigKeys = null, afterTab = null) {
   const tabs = document.getElementById('tabs'), main = document.getElementById('main');
   const t = document.createElement('button'); t.className = 'tab'; t.role = 'tab'; t.id = 'tab-' + key; t.textContent = title; t.setAttribute('aria-selected', 'false'); t.onclick = () => show(key);
   const ref = afterTab ? document.getElementById('tab-' + afterTab) : null; if (ref && ref.nextSibling) tabs.insertBefore(t, ref.nextSibling); else tabs.appendChild(t);
@@ -3331,7 +3331,7 @@ function onGuidedClick(e) {
 }
 if (ROLE !== 'mei') renderGuided();
 const GUIDED2 = null;
-if (ROLE !== 'jie' && GUIDED2 && GUIDED2.problems && GUIDED2.problems.length) renderGuided(GUIDED2, 'guided7', '妹妹・今天的數學作業', GUIDED2._keys || null, 'math');
+if (ROLE !== 'jie' && GUIDED2 && GUIDED2.problems && GUIDED2.problems.length) renderGuided(GUIDED2, 'guided7', '今天的數學作業', GUIDED2._keys || null, 'math');
 if (ROLE !== 'mei') { renderConcepts(); renderAllMap(); }
 
 // ---------- 獨自練習 ----------
