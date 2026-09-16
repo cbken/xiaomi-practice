@@ -335,7 +335,7 @@ function logEvent(item, picked, correct){
     fetch(LOG.url,{method:'POST',mode:'no-cors',body:fd}).catch(()=>{});
   }catch(e){}
 }
-// ---- 同步層：有 PIN 就把 localStorage 的 xm_*/xe_* 同步到本機 API（xm.kvkv.asia）；沒網／沒 PIN 照舊只存裝置 ----
+// ---- 同步層：有 PIN 就把 localStorage 的 xm_*/xe_* 同步到本機 API（本機後端）；沒網／沒 PIN 照舊只存裝置 ----
 const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {url, child}
 (function(){
   if(!SYNC || !SYNC.url) return;
