@@ -56,6 +56,26 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .cjudge{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .drillbox{border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;margin:8px 0 12px;background:var(--accent-soft)}
 .notyet{font-size:12.5px;color:#8A5A00;background:#FFF4D6;border-radius:8px;padding:4px 8px;margin:4px 0 6px}
+.askbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}.askbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}.askbox .ar{display:flex;gap:8px}.askbox input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--tab);color:var(--ink)}.askbox .am{font-size:12.5px;color:#2E8B57;margin-top:4px;min-height:1.2em}
+.brand{flex-wrap:wrap;gap:6px}
+.exportbtn{white-space:nowrap;margin-left:8px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer}
+.exportbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--accent);border-radius:12px;background:var(--paper)}
+.exportbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}
+.exportbox textarea{width:100%;min-height:150px;font:13px/1.5 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;box-sizing:border-box;background:var(--tab);color:var(--ink)}
+.exportbox .eb{display:flex;gap:8px;margin-top:6px}
+.today{border:2px solid var(--accent);border-radius:14px;padding:12px 14px;margin:8px 0 14px;background:var(--accent-soft)}
+.today .th{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:15px;margin-bottom:6px}.today .th span{font-size:12.5px;color:var(--mute)}
+.today .task{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px dashed var(--line)}
+.today .task .tl{font-size:15px;line-height:1.45}.today .tm{font-size:12px;color:var(--mute);margin-left:6px}.today .tn{font-size:12.5px;color:var(--mute)}
+.today .tr{display:flex;gap:8px;align-items:center;white-space:nowrap}.today .tp{font-size:13px;color:var(--mute)}.today .ok{color:#2E8B57;font-weight:800}
+.today .task.fin .tl{color:var(--mute);text-decoration:line-through}
+.today .go{padding:8px 14px;font-size:14px}.today .more{margin-top:8px;background:transparent;color:var(--mute);border:1px solid var(--line)}
+.today .donel{font-size:13px;color:#2E8B57;margin-top:6px}
+.today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
+article.q.dim{opacity:.35}
+.subjbar .tab{font-size:15px;font-weight:800}
+.hub .subjbar{display:contents}.hub .subjbar .tab{padding:8px 14px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent)}.hub .subjbar .tab[aria-selected="true"]{background:var(--accent);color:#fff}
+.subbar{margin-top:2px}.subbar .tab.sub{font-size:13px;padding:5px 11px;background:var(--tab)}.subbar .tab.sub[aria-selected="true"]{background:var(--accent);color:#fff}
 
 .gp{padding:16px 0 20px;border-bottom:1px solid var(--line)}
 .gp h2{font:700 17px/1.4 "Noto Sans TC",sans-serif;margin:0 0 2px}
@@ -3276,7 +3296,7 @@ function msgTip(stage, t) { let e = stage.querySelector('.tip'); if (!e) { e = d
 function showEl(el, on = true) { if (el) el.hidden = !on; }
 function nodeDone(node) {
   node.classList.add('done'); showEl(q$(node, '.donemark'));
-  mastered.add(node.dataset.cid); recordPass(node.dataset.cid); markConceptBox(node.dataset.cid);
+  mastered.add(node.dataset.cid); recordPass(node.dataset.cid); markConceptBox(node.dataset.cid); if (typeof logEvent === 'function') logEvent('concept:' + node.dataset.cid, 'pass', true);
   const stage = node.closest('.stage'); checkStage(stage);
   const gt = node.closest('.gteach'); if (gt) { showEl(gt, false); showEl(q$(gt.parentElement, '.review')); }
 }
@@ -3304,7 +3324,7 @@ function onGuidedClick(e) {
     case 'peek': showEl(b, false); showEl(q$(node, ':scope > .gans')); showEl(q$(node, '.judge')); break;
     case 'ok': showEl(q$(node, '.judge'), false); showEl(q$(node, '.recite')); break;
     case 'ng': case 'ng3': {
-      if (act === 'ng' && node.dataset.review === '1' && !node.dataset.failed) { node.dataset.failed = '1'; recordFail(node.dataset.cid); markConceptBox(node.dataset.cid); }
+      if (act === 'ng' && node.dataset.review === '1' && !node.dataset.failed) { node.dataset.failed = '1'; recordFail(node.dataset.cid); markConceptBox(node.dataset.cid); if (typeof logEvent === 'function') logEvent('concept:' + node.dataset.cid, 'review-fail', false); }
       showEl(q$(node, '.judge'), false); const t = q$(node, '.teach'); showEl(t);
       const n = +node.dataset.attempts + 1; node.dataset.attempts = n;
       // reset inner
@@ -3430,14 +3450,17 @@ const _sg = document.getElementById('set-guided'); if (_sg) _sg.addEventListener
 });
 if (ROLE !== 'mei') renderPractice();
 
-// 頁簽順序：① 觀念 ② 今晚功課 ③ 練習（有才顯示）
+const TESTSET = {"problems": [], "_keys": null};
+if (TESTSET.problems && TESTSET.problems.length) renderGuided(TESTSET, 'test', '考卷練習', TESTSET._keys || null, 'guided');
+// 頁簽順序：① 觀念 ② 今晚功課 ③ 考卷練習 ④ 三年 ⑤ 練習（有才顯示）
 (function(){
   const tabs=document.getElementById('tabs');
   const tc=document.getElementById('tab-concepts'), tg=document.getElementById('tab-guided'), tp=document.getElementById('tab-practice');
   if(tc){ tc.textContent='① 所有觀念'; tabs.prepend(tc); }
   if(tg){ tg.textContent='② 今晚功課'; }
-  const ta=document.getElementById('tab-allmap'); if(ta){ ta.textContent='③ 三年全部觀念'; tabs.appendChild(ta); }
-  if(tp){ tp.textContent='④ 練習'; if(!false) tp.hidden=true; }
+  const tt=document.getElementById('tab-test'); if(tt){ tt.textContent='③ 考卷練習'; }
+  const ta=document.getElementById('tab-allmap'); if(ta){ ta.textContent=(tt?'④':'③')+' 三年全部觀念'; tabs.appendChild(ta); }
+  if(tp){ tp.textContent=(tt?'⑤':'④')+' 練習'; if(!false) tp.hidden=true; }
   const sg=document.getElementById('set-guided');
   if(sg && !false) sg.innerHTML='<div class="hwempty">今晚的功課還沒放上來。<br>爸爸把作業拍給小咪之後，這裡會出現「這份作業只有幾種題型、每一型怎麼開始」＋一題一題的引導。</div>';
   show('concepts');
