@@ -74,6 +74,21 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .today .donel{font-size:13px;color:#2E8B57;margin-top:6px}
 .today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
 article.q.dim{opacity:.35}
+.pick{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);margin:0 0 14px;overflow:hidden}
+.pick .ph{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--tab);color:var(--ink);border:0;padding:11px 14px;font:700 15px/1.3 "Noto Sans TC",sans-serif;cursor:pointer;text-align:left}
+.pick .ph[aria-expanded="true"]{border-bottom:1px solid var(--line)}
+.pick .ph:focus-visible,.pick .pb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pick .pchev{color:var(--mute);font-size:13px}
+.pick .pbody{padding:2px 14px 12px}
+.pick .pdone{font-size:13px;color:var(--mute);padding:9px 0;border-bottom:1px dashed var(--line)}
+.pick .pgrp{font:800 14px/1.3 "Noto Sans TC",sans-serif;color:var(--accent);margin:12px 0 0;letter-spacing:.5px}
+.pick .pitem{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;padding:7px 0;border-top:1px dashed var(--line)}
+.pick .pl{font-size:14.5px;line-height:1.45;flex:1 1 40%}
+.pick .pn{display:block;font-size:12.5px;color:var(--mute)}
+.pick .pbs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pick .pb{border:1px solid var(--line);background:var(--tab);color:var(--ink);border-radius:999px;padding:5px 11px;font:500 13px/1 "Noto Sans TC",sans-serif;cursor:pointer;text-decoration:none;display:inline-block}
+.pick .pb:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:480px){.pick .pl{flex:1 1 100%}.pick .pbs{justify-content:flex-start}}
 .subjbar .tab{font-size:15px;font-weight:800}
 .hub .subjbar{display:contents}.hub .subjbar .tab{padding:8px 14px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent)}.hub .subjbar .tab[aria-selected="true"]{background:var(--accent);color:#fff}
 .subbar{margin-top:2px}.subbar .tab.sub{font-size:13px;padding:5px 11px;background:var(--tab)}.subbar .tab.sub[aria-selected="true"]{background:var(--accent);color:#fff}
@@ -3671,11 +3686,77 @@ const TODAY = {"date": "2026-09-16", "budget_min": 25, "tasks": [{"href": "eng/"
   document.addEventListener('click',e=>{ if(e.target.closest('.opt,[data-cj],.reveal,[data-act="recited"]')) setTimeout(render,0); });
 })();
 
+// ---- 科目對照表（「🎯 我想練…」面板與兩層導覽共用）----
+const SUBJ_MAP = {math:['數學','練習卷'], guided7:['數學','今天的作業'], eng:['英文','練習卷'], eng7np:['英文','補洞'], chi:['國文','練習卷'],
+                  bio:['生物','練習卷'], bio7a:['生物','動畫'], bio7w:['生物','錯題'], bio7c:['生物','填空卡'],
+                  emo:['英文','情緒動詞 50'], vocab:['英文','單字'], guided:['數學','引導解題'], concepts:['數學','第五冊觀念'], practice:['數學','獨自練習'], allmap:['數學','三年地圖']};
+
+// ---- 🎯 我想練…（自己選）：清單由頁面現有的頁簽自動長出來，不手寫 ----
+const PICK_EXTRA = [{"subj": "數學", "label": "國三數學專頁", "href": "math/", "note": "去 ③ 考卷練習"}, {"subj": "英文", "label": "國三英文專頁", "href": "eng/", "note": "去 ⑤ 單字"}];
+(function(){
+  const main=document.getElementById('main'), tabs=document.getElementById('tabs');
+  if(!main||!tabs) return;
+  const all=[...tabs.querySelectorAll('.tab')]; if(!all.length) return;
+  const LSP='xm_pick_v1', LSO='xm_pick_open';
+  const groups=[], byS={};
+  const add=(subj,it)=>{ if(!byS[subj]){ byS[subj]={subj,items:[]}; groups.push(byS[subj]); } byS[subj].items.push(it); };
+  all.forEach(t=>{ const key=t.id.slice(4), m=SUBJ_MAP[key];
+    add(m?m[0]:'其他', {key, label: m?m[1]:t.textContent.replace(/^✓\s*/,'').trim()}); });
+  (PICK_EXTRA||[]).forEach(e=>add(e.subj, {href:e.href, label:e.label, note:e.note}));
+  function chunks(set){ const ns=set.items.map(q=>+q.n).sort((a,b)=>a-b), out=[];
+    for(let i=0;i<ns.length;i+=10) out.push([ns[i], ns[Math.min(i+9, ns.length-1)]]);
+    return out; }
+  function doneLine(){
+    const parts=[];
+    DATA.forEach(set=>{ const n=Object.keys(state[set.key]||{}).length; if(n) parts.push(esc(set.title)+' '+n+' 題'); });
+    return parts.length ? '今天做過：'+parts.join('、') : '還沒開始，先做上面那一件 🐱';
+  }
+  let open=false; try{ open=localStorage.getItem(LSO)==='1'; }catch(e){}
+  const box=document.createElement('section'); box.className='pick'; box.id='pick';
+  let h=`<button class="ph" type="button" id="pickhead" aria-expanded="${open}">🎯 我想練…（自己選）<span class="pchev">${open?'▾':'▸'}</span></button>`
+      + `<div class="pbody" id="pickbody"${open?'':' hidden'}><div class="pdone" id="pickdone">${doneLine()}</div>`;
+  groups.forEach(g=>{
+    h+=`<div class="pgrp">${esc(g.subj)}</div>`;
+    g.items.forEach(it=>{
+      let btns='';
+      if(it.href) btns=`<a class="pb" href="${esc(it.href)}">去做 →</a>`;
+      else { const set=DATA.find(s=>s.key===it.key);
+        btns=(set && !set.cards && set.items.length)
+          ? chunks(set).map(([a,b])=>`<button class="pb" type="button" data-pk="${esc(it.key)}" data-from="${a}" data-to="${b}">${a}–${b}</button>`).join('')
+          : `<button class="pb" type="button" data-pk="${esc(it.key)}">去做 →</button>`; }
+      h+=`<div class="pitem"><div class="pl">${esc(it.label)}${it.note?`<span class="pn">${esc(it.note)}</span>`:''}</div><div class="pbs">${btns}</div></div>`;
+    });
+  });
+  box.innerHTML = h + `</div>`;
+  const today=document.getElementById('today');
+  if(today && today.parentElement===main) today.after(box); else main.insertBefore(box, main.firstChild);
+  function refresh(){ const d=document.getElementById('pickdone'); if(d) d.innerHTML=doneLine(); }
+  document.getElementById('pickhead').addEventListener('click',()=>{
+    const body=document.getElementById('pickbody'), on=body.hidden; body.hidden=!on;
+    document.getElementById('pickhead').setAttribute('aria-expanded', String(on));
+    box.querySelector('.pchev').textContent = on?'▾':'▸';
+    try{ localStorage.setItem(LSO, on?'1':'0'); }catch(e){}
+    if(on) refresh();
+  });
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('[data-pk]'); if(!b) return;
+    const key=b.dataset.pk, from=b.dataset.from?+b.dataset.from:null, to=b.dataset.to?+b.dataset.to:null;
+    show(key);
+    const sec=document.getElementById('set-'+key);
+    if(sec){ const arts=[...sec.querySelectorAll('article.q')];
+      if(from&&to){ arts.forEach(a=>a.classList.toggle('dim', !(+a.dataset.n>=from && +a.dataset.n<=to)));
+        const first=arts.find(a=>+a.dataset.n===from);
+        if(first) setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'start'}),50);
+      } else { arts.forEach(a=>a.classList.remove('dim')); setTimeout(()=>sec.scrollIntoView({behavior:'smooth',block:'start'}),50); } }
+    try{ localStorage.setItem(LSP, JSON.stringify({date:new Date().toISOString().slice(0,10), key, from, to})); }catch(e){}
+    if(typeof logEvent==='function') logEvent('pick:'+key, (from&&to)?from+'-'+to:'all', null);
+  });
+  document.addEventListener('click',e=>{ if(e.target.closest('.opt,[data-cj],.reveal,[data-act="recited"]')) setTimeout(refresh,0); });
+})();
+
 // ---- 兩層導覽：上層只有科目，下層才是該科的各份內容 ----
 (function(){
-  const SUBJ = {math:['數學','練習卷'], guided7:['數學','今天的作業'], eng:['英文','練習卷'], eng7np:['英文','補洞'], chi:['國文','練習卷'],
-                bio:['生物','練習卷'], bio7a:['生物','動畫'], bio7w:['生物','錯題'], bio7c:['生物','填空卡'],
-                emo:['英文','情緒動詞 50'], vocab:['英文','單字'], guided:['數學','引導解題'], concepts:['數學','第五冊觀念'], practice:['數學','獨自練習'], allmap:['數學','三年地圖']};
+  const SUBJ = SUBJ_MAP;
   const tabs=document.getElementById('tabs'); const old=[...tabs.querySelectorAll('.tab')]; if(old.length<3) return;
   const groups=[]; const byS={};
   old.forEach(t=>{ const key=t.id.slice(4); const [subj,label]=SUBJ[key]||['其他', t.textContent.replace(/^✓ /,'')]; if(!byS[subj]){ byS[subj]={subj, items:[]}; groups.push(byS[subj]); } byS[subj].items.push({key,label,tab:t}); });
