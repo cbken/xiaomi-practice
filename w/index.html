@@ -3884,7 +3884,7 @@ document.getElementById('exportclose').addEventListener('click',()=>{ document.g
 document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=document.getElementById('exporttxt'); ta.select(); const b=document.getElementById('exportcopy'); (navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>{b.textContent='已複製 ✓';}).catch(()=>{ try{document.execCommand('copy'); b.textContent='已複製 ✓';}catch(e){ b.textContent='請長按文字複製'; } }); });
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
-const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np", "from": 1, "to": 10, "label": "英文補洞 A 組 第 1–10 題", "min": 5, "note": "先念三步驟口訣再開始"}, {"set": "guided7", "label": "今天的數學作業：走第 1 題（P 的坐標）", "min": 10}]};
+const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np", "from": 1, "to": 10, "label": "英文補洞 A 組 第 1–10 題", "min": 5, "note": "先念三步驟口訣再開始"}]};
 (function(){
   if(!TODAY || !TODAY.tasks || !TODAY.tasks.length) return;
   const tabs=document.getElementById('tabs'); const main=document.getElementById('main');
