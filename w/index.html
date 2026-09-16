@@ -3654,7 +3654,7 @@ function stepStage(p, s, n) {
   return `<div class="stage step locked" data-stage="${n}">
     <div class="lab">引導 ${n}</div>
     ${sigCard(c)}
-    <div class="gate"><div class="j">${esc(c.jingle)}</div><div style="font-size:13px;color:var(--mute)">念一遍再開始想</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
+    <div class="gate"><div class="j">${esc(s.jingle || c.jingle)}</div><div style="font-size:13px;color:var(--mute)">念一遍再開始想</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
     <div class="guide" hidden>
       <div class="qtext">${esc(s.guide)}</div>
       <button class="gbtn" data-act="gpeek">我想好了，看答案</button>

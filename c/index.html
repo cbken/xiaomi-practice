@@ -3345,7 +3345,7 @@ function stepStage(p, s, n) {
   return `<div class="stage step locked" data-stage="${n}">
     <div class="lab">引導 ${n}</div>
     ${sigCard(c)}
-    <div class="gate"><div class="j">${esc(c.jingle)}</div><div style="font-size:13px;color:var(--mute)">念一遍再開始想</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
+    <div class="gate"><div class="j">${esc(s.jingle || c.jingle)}</div><div style="font-size:13px;color:var(--mute)">念一遍再開始想</div><button class="gbtn" data-act="gate">我念了 ✓</button></div>
     <div class="guide" hidden>
       <div class="qtext">${esc(s.guide)}</div>
       <button class="gbtn" data-act="gpeek">我想好了，看答案</button>
@@ -3586,7 +3586,7 @@ document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=do
 })();
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
-const TODAY = {"date": "2026-09-16", "budget_min": 20, "tasks": [{"href": "eng/", "label": "英文診斷 30 題（不會的就猜，做完截圖表格）", "min": 20}]};
+const TODAY = {"date": "2026-09-16", "budget_min": 25, "tasks": [{"href": "eng/", "label": "英文：錯題回來 4 題（昨天考卷的）＋看一眼「on」那兩點", "min": 5, "note": "先小聲念四個選項再選"}, {"href": "math/", "label": "數學：③ 考卷練習 → 題 13、14、15（同一型，走完一題再下一題）", "min": 20, "note": "這三題是同一招：先找相似三角形、再想高的比"}]};
 (function(){
   if(!TODAY || !TODAY.tasks || !TODAY.tasks.length) return;
   const tabs=document.getElementById('tabs'); const main=document.getElementById('main');
