@@ -75,6 +75,7 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
 article.q.dim{opacity:.35}
 .subjbar .tab{font-size:15px;font-weight:800}
+.hub .subjbar{display:contents}.hub .subjbar .tab{padding:8px 14px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent)}.hub .subjbar .tab[aria-selected="true"]{background:var(--accent);color:#fff}
 .subbar{margin-top:2px}.subbar .tab.sub{font-size:13px;padding:5px 11px;background:var(--tab)}.subbar .tab.sub[aria-selected="true"]{background:var(--accent);color:#fff}
 
 .gp{padding:16px 0 20px;border-bottom:1px solid var(--line)}
@@ -3930,7 +3931,7 @@ const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np
   old.forEach(t=>{ const key=t.id.slice(4); const [subj,label]=SUBJ[key]||['其他', t.textContent.replace(/^✓ /,'')]; if(!byS[subj]){ byS[subj]={subj, items:[]}; groups.push(byS[subj]); } byS[subj].items.push({key,label,tab:t}); });
   const bar=document.createElement('div'); bar.className='tabs subjbar'; bar.setAttribute('role','tablist');
   const sub=document.createElement('div'); sub.className='tabs subbar'; sub.hidden=true;
-  tabs.style.display='none'; const todayBox=document.getElementById('today'); const main=document.getElementById('main'); if(todayBox){ todayBox.after(bar); } else { tabs.after(bar); } bar.after(sub);
+  tabs.style.display='none'; const hub=document.querySelector('.hub'); if(hub){ bar.classList.add('inhub'); hub.appendChild(bar); hub.after(sub); } else { tabs.after(bar); bar.after(sub); }
   function renderSub(subj){ const g=byS[subj]; sub.innerHTML=g.items.map(it=>`<button class="tab sub" data-key="${it.key}">${esc(it.label)}${it.tab.dataset.fin?' ✓':''}</button>`).join(''); sub.hidden=false; }
   function mark(key){ const g=groups.find(g=>g.items.some(i=>i.key===key)); if(!g) return; bar.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.subj===g.subj)); if(sub.dataset.subj!==g.subj){ renderSub(g.subj); sub.dataset.subj=g.subj; } sub.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.key===key)); }
   bar.innerHTML=groups.map(g=>`<button class="tab" data-subj="${esc(g.subj)}">${esc(g.subj)}</button>`).join('');
