@@ -339,7 +339,7 @@ function logEvent(item, picked, correct){
 const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "w"};   // {url, child}
 (function(){
   if(!SYNC || !SYNC.url) return;
-  const SAME = location.host==='xm.kvkv.asia' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
+  const SAME = location.host===atob('eG0ua3Zrdi5hc2lh') || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
   const KEYS=()=>Object.keys(localStorage).filter(k=>/^(xm_|xe_)/.test(k)&&k!=='xm_token'&&k!=='xm_device'&&k!=='xm_sync_up'&&k!=='xm_queue');
   const tok=()=>{ try{ return localStorage.getItem('xm_token')||''; }catch(e){ return ''; } };
   const hdr=()=>({'Content-Type':'application/json','Authorization':'Bearer '+tok()});
