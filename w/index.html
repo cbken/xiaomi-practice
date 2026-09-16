@@ -57,6 +57,7 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .cjudge{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .drillbox{border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;margin:8px 0 12px;background:var(--accent-soft)}
 .notyet{font-size:12.5px;color:#8A5A00;background:#FFF4D6;border-radius:8px;padding:4px 8px;margin:4px 0 6px}
+.askbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}.askbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}.askbox .ar{display:flex;gap:8px}.askbox input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--tab);color:var(--ink)}.askbox .am{font-size:12.5px;color:#2E8B57;margin-top:4px;min-height:1.2em}
 .exportbtn{margin-left:8px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer}
 .exportbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--accent);border-radius:12px;background:var(--paper)}
 .exportbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}
@@ -198,7 +199,7 @@ article.q.dim{opacity:.35}
 .hub{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}.hub a{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.hub a.sheet{background:#2E7D4F}
 </style></head><body>
 <header><div class="wrap">
-<div class="brand"><h1>小咪練習室・W 🐵<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div><button class="exportbtn" id="exportbtn" type="button">📤 今天的紀錄</button></div><div id="exportbox" class="exportbox" hidden><div class="eh"><b>今天的紀錄</b><span>全選複製，用 LINE 傳給爸爸</span></div><textarea id="exporttxt" readonly></textarea><div class="eb"><button class="gbtn" id="exportcopy" type="button">複製</button><button class="gbtn" id="exportclose" type="button">關閉</button></div></div>
+<div class="brand"><h1>小咪練習室・W 🐵<small>點答案就知道對不對，還有為什麼</small></h1><div class="score" id="score"><b>0</b>/0</div><button class="exportbtn" id="exportbtn" type="button">📤 今天的紀錄</button></div><div id="askbox" class="askbox" hidden><div class="eh"><b>🙋 我卡在這題</b><span>打一句就好，隔天答案會出現在這裡</span></div><div class="ar"><input id="asktxt" type="text" maxlength="200" placeholder="例：英文補洞第 7 題為什麼是 an"><button class="gbtn" id="asksend" type="button">送出</button></div><div id="askmsg" class="am"></div></div><div id="exportbox" class="exportbox" hidden><div class="eh"><b>今天的紀錄</b><span>全選複製，用 LINE 傳給爸爸</span></div><textarea id="exporttxt" readonly></textarea><div class="eb"><button class="gbtn" id="exportcopy" type="button">複製</button><button class="gbtn" id="exportclose" type="button">關閉</button></div></div>
 <div class="hub"><a class="sheet" href="https://docs.google.com/spreadsheets/d/19b9O3rLowgrhbHi6moMiS0kY7l6UOA142pmNq5yJAXk/edit" target="_blank" rel="noopener">📅 行事曆（Google Sheet）</a></div><div class="tabs" role="tablist" id="tabs"></div>
 </div></header>
 <main class="wrap" id="main"></main>
@@ -3883,6 +3884,11 @@ function exportSummary(){
 document.getElementById('exportbtn').addEventListener('click',()=>{ const box=document.getElementById('exportbox'); document.getElementById('exporttxt').value=exportSummary(); box.hidden=false; box.scrollIntoView({behavior:'smooth',block:'start'}); });
 document.getElementById('exportclose').addEventListener('click',()=>{ document.getElementById('exportbox').hidden=true; });
 document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=document.getElementById('exporttxt'); ta.select(); const b=document.getElementById('exportcopy'); (navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>{b.textContent='已複製 ✓';}).catch(()=>{ try{document.execCommand('copy'); b.textContent='已複製 ✓';}catch(e){ b.textContent='請長按文字複製'; } }); });
+
+// ---- 🙋 我卡在這題：LOG 有設定才顯示；送到同一個表單 ----
+(function(){ const box=document.getElementById('askbox'); if(!LOG||!LOG.url){ return; } box.hidden=false;
+  document.getElementById('asksend').addEventListener('click',()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; logEvent('question', v, null); document.getElementById('asktxt').value=''; document.getElementById('askmsg').textContent='送出了 ✓ 明天看這裡'; });
+})();
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
 const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np", "from": 1, "to": 10, "label": "英文補洞 A 組 第 1–10 題", "min": 5, "note": "先念三步驟口訣再開始"}]};
