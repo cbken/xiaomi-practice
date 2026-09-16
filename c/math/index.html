@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><link rel="apple-touch-icon" href="../../icons/c.png"><link rel="icon" href="../../icons/c.png"><title>國三數學</title>
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow, noarchive, nosnippet"><link rel="apple-touch-icon" href="../../icons/c.png"><link rel="icon" href="../../icons/c.png"><title>國三數學</title>
 <style>
 :root{--bg:#FBF8F2;--paper:#FFFFFF;--ink:#23262B;--mute:#6E6A63;--line:#E4DED3;--accent:#D9694F;--accent-soft:#FBE9E3;--good:#2E8B57;--good-soft:#E3F3E9;--bad:#C4443A;--bad-soft:#FBE5E3;--why:#F3EFE6;--tab:#EFE9DD;--sel:#23262B;--sel-ink:#FFFFFF;}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17181C;--paper:#1F2126;--ink:#ECE8E0;--mute:#A39D92;--line:#33363D;--accent:#E98368;--accent-soft:#3A2822;--good:#5CBF86;--good-soft:#1E3327;--bad:#E26A60;--bad-soft:#3A2220;--why:#25272D;--tab:#2A2C33;--sel:#ECE8E0;--sel-ink:#17181C;}}
@@ -232,10 +232,10 @@ function logEvent(item, picked, correct){
 }
 
 // ---- 同步層：有 PIN 就把 localStorage 的 xm_*/xe_* 同步到本機 API（xm.kvkv.asia）；沒網／沒 PIN 照舊只存裝置 ----
-const SYNC = {"url": "https://xm.kvkv.asia", "child": "c"};   // {url:'https://xm.kvkv.asia', child:'w'}
+const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {url:'https://xm.kvkv.asia', child:'w'}
 (function(){
   if(!SYNC || !SYNC.url) return;
-  const SAME = location.host==='xm.kvkv.asia' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : SYNC.url;
+  const SAME = location.host==='xm.kvkv.asia' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
   const KEYS=()=>Object.keys(localStorage).filter(k=>/^(xm_|xe_)/.test(k)&&k!=='xm_token'&&k!=='xm_device'&&k!=='xm_sync_up'&&k!=='xm_queue');
   const tok=()=>{ try{ return localStorage.getItem('xm_token')||''; }catch(e){ return ''; } };
   const hdr=()=>({'Content-Type':'application/json','Authorization':'Bearer '+tok()});
