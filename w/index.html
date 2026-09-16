@@ -336,7 +336,7 @@ function logEvent(item, picked, correct){
   }catch(e){}
 }
 // ---- 同步層：有 PIN 就把 localStorage 的 xm_*/xe_* 同步到本機 API（xm.kvkv.asia）；沒網／沒 PIN 照舊只存裝置 ----
-const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "w"};   // {url:'https://xm.kvkv.asia', child:'w'}
+const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "w"};   // {url, child}
 (function(){
   if(!SYNC || !SYNC.url) return;
   const SAME = location.host==='xm.kvkv.asia' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
