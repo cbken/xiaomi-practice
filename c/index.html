@@ -212,6 +212,8 @@ article.q.dim{opacity:.35}
 .vline{min-height:44px;display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1.5px dashed var(--line);border-radius:10px;margin:8px 0} .vhint{color:var(--mute);font-size:13px}
 .vpool{display:flex;flex-wrap:wrap;gap:6px} .vtok{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 10px;font:600 15px/1.3 Nunito,"Noto Sans TC",sans-serif;cursor:pointer} .vtok.on{background:var(--good-soft);border-color:var(--good)} .vtok:disabled{opacity:.7;cursor:default}
 .vstreak{font-weight:800;color:#d35400;margin-left:8px}
+.syncbadge{position:fixed;right:10px;bottom:10px;z-index:50;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--good-soft);color:var(--ink);border:1px solid var(--line);cursor:pointer;opacity:.92}
+.syncbadge.warn{background:var(--bad-soft)}
 .hub{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}.hub a{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.hub a.sheet{background:#2E7D4F}
 </style></head><body>
 <header><div class="wrap">
@@ -331,6 +333,35 @@ function logEvent(item, picked, correct){
     fetch(LOG.url,{method:'POST',mode:'no-cors',body:fd}).catch(()=>{});
   }catch(e){}
 }
+// ---- 同步層：有 PIN 就把 localStorage 的 xm_*/xe_* 同步到本機 API（xm.kvkv.asia）；沒網／沒 PIN 照舊只存裝置 ----
+const SYNC = {"url": "https://xm.kvkv.asia", "child": "c"};   // {url:'https://xm.kvkv.asia', child:'w'}
+(function(){
+  if(!SYNC || !SYNC.url) return;
+  const KEYS=()=>Object.keys(localStorage).filter(k=>/^(xm_|xe_)/.test(k)&&k!=='xm_token'&&k!=='xm_device'&&k!=='xm_sync_up'&&k!=='xm_queue');
+  const tok=()=>{ try{ return localStorage.getItem('xm_token')||''; }catch(e){ return ''; } };
+  const hdr=()=>({'Content-Type':'application/json','Authorization':'Bearer '+tok()});
+  const upd=()=>{ try{ return JSON.parse(localStorage.getItem('xm_sync_up')||'{}'); }catch(e){ return {}; } };
+  const setUpd=o=>{ try{ localStorage.setItem('xm_sync_up', JSON.stringify(o)); }catch(e){} };
+  const snap=()=>{ const st={}; KEYS().forEach(k=>{ try{ st[k]=JSON.parse(localStorage.getItem(k)); }catch(e){ st[k]=localStorage.getItem(k); } }); return st; };
+  let dirty=false, timer=null, online=true;
+  function badge(t,cls){ let b=document.getElementById('syncbadge'); if(!b){ b=document.createElement('div'); b.id='syncbadge'; b.className='syncbadge'; document.body.appendChild(b); } b.textContent=t; b.className='syncbadge '+(cls||''); }
+  async function pull(){ if(!tok()) return; try{ const r=await fetch(SYNC.url+'/state',{headers:hdr()}); if(r.status===401){ localStorage.removeItem('xm_token'); badge('🔑 需要重新輸入 PIN','warn'); return; } const d=await r.json(); const u=upd(); let changed=false; Object.keys(d.state||{}).forEach(k=>{ const remoteT=d.updated[k]||0, localT=u[k]||0; if(remoteT>localT){ localStorage.setItem(k, JSON.stringify(d.state[k])); u[k]=remoteT; changed=true; } }); setUpd(u); online=true; badge('☁️ 已同步',''); if(changed) setTimeout(()=>location.reload(),300); }catch(e){ online=false; badge('📵 離線，先存這台','warn'); } }
+  async function push(){ if(!tok()||!dirty) return; dirty=false; const st=snap(), u=upd(); const now=Date.now()/1000; KEYS().forEach(k=>{ if(!u[k]) u[k]=now; }); try{ const r=await fetch(SYNC.url+'/state',{method:'PUT',headers:hdr(),body:JSON.stringify({state:st,updated:u})}); if(r.ok){ const d=await r.json(); setUpd(d.updated||u); online=true; badge('☁️ 已同步',''); flushQueue(); } else if(r.status===401){ localStorage.removeItem('xm_token'); badge('🔑 需要重新輸入 PIN','warn'); } }catch(e){ dirty=true; online=false; badge('📵 離線，先存這台','warn'); } }
+  // 任何 localStorage 寫入 → 標記該 key 的時間、排程上傳
+  const _set=Storage.prototype.setItem; Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); if(this===localStorage && /^(xm_|xe_)/.test(k) && !/^xm_(token|device|sync_up|queue)$/.test(k)){ const u=upd(); u[k]=Date.now()/1000; setUpd(u); dirty=true; clearTimeout(timer); timer=setTimeout(push,1500); } };
+  // 作答紀錄 / 我卡在這題：離線先排隊
+  const q=()=>{ try{ return JSON.parse(localStorage.getItem('xm_queue')||'[]'); }catch(e){ return []; } };
+  const setQ=a=>{ try{ localStorage.setItem('xm_queue', JSON.stringify(a.slice(-500))); }catch(e){} };
+  async function send(path,body){ if(!tok()) return false; try{ const r=await fetch(SYNC.url+path,{method:'POST',headers:hdr(),body:JSON.stringify(body)}); return r.ok; }catch(e){ return false; } }
+  async function flushQueue(){ const a=q(); if(!a.length) return; const rest=[]; for(const it of a){ if(!(await send(it.p,it.b))) rest.push(it); } setQ(rest); }
+  window.logEvent=function(item,picked,correct){ const b={item,picked:String(picked),correct:correct===null?'seen':(correct?'1':'0'),ts:new Date().toISOString(),device:(function(){ try{ let d=localStorage.getItem('xm_device'); if(!d){ d=Math.random().toString(36).slice(2,8); localStorage.setItem('xm_device',d);} return d; }catch(e){ return ''; } })()}; send('/log',b).then(ok=>{ if(!ok){ const a=q(); a.push({p:'/log',b}); setQ(a); } }); };
+  window.askXiaomi=async function(item,text,page){ const b={item,text,page:page||location.pathname}; const ok=await send('/ask',b); if(!ok){ const a=q(); a.push({p:'/ask',b}); setQ(a); } return ok; };
+  // PIN 輸入（第一次）
+  async function login(){ const pin=prompt('輸入妳的 6 位 PIN（第一次才要）'); if(!pin) return; try{ const r=await fetch(SYNC.url+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({child:SYNC.child,pin:pin.trim()})}); if(r.ok){ const d=await r.json(); localStorage.setItem('xm_token',d.token); badge('☁️ 已連線',''); dirty=true; await pull(); push(); } else if(r.status===429){ badge('等 15 分鐘再試','warn'); } else { badge('PIN 不對','warn'); } }catch(e){ badge('📵 連不上，晚點再試','warn'); } }
+  document.addEventListener('click',e=>{ const b=e.target.closest('#syncbadge'); if(b && !tok()) login(); });
+  if(tok()){ pull(); } else { badge('🔑 輸入 PIN 開啟同步','warn'); }
+  window.addEventListener('online',()=>{ pull(); flushQueue(); });
+})();
 // ---------- 16 個觀念的「動手玩」小動畫（重講第 3 層） ----------
 // 每個 widget：html() 產生 SVG + 一支滑桿；update(root, v) 依滑桿值重畫。
 const DEG = Math.PI / 180;
@@ -3593,8 +3624,8 @@ document.getElementById('exportclose').addEventListener('click',()=>{ document.g
 document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=document.getElementById('exporttxt'); ta.select(); const b=document.getElementById('exportcopy'); (navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>{b.textContent='已複製 ✓';}).catch(()=>{ try{document.execCommand('copy'); b.textContent='已複製 ✓';}catch(e){ b.textContent='請長按文字複製'; } }); });
 
 // ---- 🙋 我卡在這題：LOG 有設定才顯示；送到同一個表單 ----
-(function(){ const box=document.getElementById('askbox'); if(!LOG||!LOG.url){ return; } box.hidden=false;
-  document.getElementById('asksend').addEventListener('click',()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; logEvent('question', v, null); document.getElementById('asktxt').value=''; document.getElementById('askmsg').textContent='送出了 ✓ 明天看這裡'; });
+(function(){ const box=document.getElementById('askbox'); const viaSync=typeof window.askXiaomi==='function'; if(!viaSync && !(LOG&&LOG.url)){ return; } box.hidden=false;
+  document.getElementById('asksend').addEventListener('click',async()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; const msg=document.getElementById('askmsg'); if(viaSync){ if(!localStorage.getItem('xm_token')){ msg.textContent='先按右下角 🔑 輸入 PIN，小咪才收得到'; return; } const ok=await window.askXiaomi(document.querySelector('.set.on')?document.querySelector('.set.on').id.slice(4):'', v, location.pathname); msg.textContent=ok?'小咪收到了 ✓ 明天早上回妳':'先存起來了，有網路會自動送出'; } else { logEvent('question', v, null); msg.textContent='送出了 ✓ 明天看這裡'; } document.getElementById('asktxt').value=''; });
 })();
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
