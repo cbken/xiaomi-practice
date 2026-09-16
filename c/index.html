@@ -73,6 +73,8 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .today .donel{font-size:13px;color:#2E8B57;margin-top:6px}
 .today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
 article.q.dim{opacity:.35}
+.subjbar .tab{font-size:15px;font-weight:800}
+.subbar{margin-top:2px}.subbar .tab.sub{font-size:13px;padding:5px 11px;background:var(--tab)}.subbar .tab.sub[aria-selected="true"]{background:var(--accent);color:#fff}
 
 .gp{padding:16px 0 20px;border-bottom:1px solid var(--line)}
 .gp h2{font:700 17px/1.4 "Noto Sans TC",sans-serif;margin:0 0 2px}
@@ -3579,6 +3581,29 @@ document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=do
 // ---- 🙋 我卡在這題：LOG 有設定才顯示；送到同一個表單 ----
 (function(){ const box=document.getElementById('askbox'); if(!LOG||!LOG.url){ return; } box.hidden=false;
   document.getElementById('asksend').addEventListener('click',()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; logEvent('question', v, null); document.getElementById('asktxt').value=''; document.getElementById('askmsg').textContent='送出了 ✓ 明天看這裡'; });
+})();
+
+// ---- 兩層導覽：上層只有科目，下層才是該科的各份內容 ----
+(function(){
+  const SUBJ = {math:['數學','練習卷'], guided7:['數學','今天的作業'], eng:['英文','練習卷'], eng7np:['英文','補洞'], chi:['國文','練習卷'],
+                bio:['生物','練習卷'], bio7a:['生物','動畫'], bio7w:['生物','錯題'], bio7c:['生物','填空卡'],
+                emo:['英文','情緒動詞 50'], guided:['數學','引導解題'], concepts:['數學','第五冊觀念'], practice:['數學','獨自練習'], allmap:['數學','三年地圖']};
+  const tabs=document.getElementById('tabs'); const old=[...tabs.querySelectorAll('.tab')]; if(old.length<3) return;
+  const groups=[]; const byS={};
+  old.forEach(t=>{ const key=t.id.slice(4); const [subj,label]=SUBJ[key]||['其他', t.textContent.replace(/^✓ /,'')]; if(!byS[subj]){ byS[subj]={subj, items:[]}; groups.push(byS[subj]); } byS[subj].items.push({key,label,tab:t}); });
+  const bar=document.createElement('div'); bar.className='tabs subjbar'; bar.setAttribute('role','tablist');
+  const sub=document.createElement('div'); sub.className='tabs subbar'; sub.hidden=true;
+  tabs.after(bar); bar.after(sub); tabs.style.display='none';
+  const wasHidden=tabs.hidden; bar.hidden=wasHidden;
+  function renderSub(subj){ const g=byS[subj]; sub.innerHTML=g.items.map(it=>`<button class="tab sub" data-key="${it.key}">${esc(it.label)}${it.tab.dataset.fin?' ✓':''}</button>`).join(''); sub.hidden=false; }
+  function mark(key){ const g=groups.find(g=>g.items.some(i=>i.key===key)); if(!g) return; bar.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.subj===g.subj)); if(sub.dataset.subj!==g.subj){ renderSub(g.subj); sub.dataset.subj=g.subj; } sub.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.key===key)); }
+  bar.innerHTML=groups.map(g=>`<button class="tab" data-subj="${esc(g.subj)}">${esc(g.subj)}</button>`).join('');
+  bar.addEventListener('click',e=>{ const b=e.target.closest('[data-subj]'); if(!b) return; const g=byS[b.dataset.subj]; show(g.items[0].key); });
+  sub.addEventListener('click',e=>{ const b=e.target.closest('[data-key]'); if(!b) return; show(b.dataset.key); });
+  const _show=window.show; window.show=function(key){ _show(key); mark(key); };
+  // 「全部內容」切換時同步顯示科目列
+  const mo=new MutationObserver(()=>{ bar.hidden=tabs.hidden; if(tabs.hidden) sub.hidden=true; }); mo.observe(tabs,{attributes:true,attributeFilter:['hidden']});
+  const cur=document.querySelector('.set.on'); if(cur) mark(cur.id.slice(4));
 })();
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
