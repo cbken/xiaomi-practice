@@ -3893,29 +3893,6 @@ document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=do
   document.getElementById('asksend').addEventListener('click',()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; logEvent('question', v, null); document.getElementById('asktxt').value=''; document.getElementById('askmsg').textContent='送出了 ✓ 明天看這裡'; });
 })();
 
-// ---- 兩層導覽：上層只有科目，下層才是該科的各份內容 ----
-(function(){
-  const SUBJ = {math:['數學','練習卷'], guided7:['數學','今天的作業'], eng:['英文','練習卷'], eng7np:['英文','補洞'], chi:['國文','練習卷'],
-                bio:['生物','練習卷'], bio7a:['生物','動畫'], bio7w:['生物','錯題'], bio7c:['生物','填空卡'],
-                emo:['英文','情緒動詞 50'], guided:['數學','引導解題'], concepts:['數學','第五冊觀念'], practice:['數學','獨自練習'], allmap:['數學','三年地圖']};
-  const tabs=document.getElementById('tabs'); const old=[...tabs.querySelectorAll('.tab')]; if(old.length<3) return;
-  const groups=[]; const byS={};
-  old.forEach(t=>{ const key=t.id.slice(4); const [subj,label]=SUBJ[key]||['其他', t.textContent.replace(/^✓ /,'')]; if(!byS[subj]){ byS[subj]={subj, items:[]}; groups.push(byS[subj]); } byS[subj].items.push({key,label,tab:t}); });
-  const bar=document.createElement('div'); bar.className='tabs subjbar'; bar.setAttribute('role','tablist');
-  const sub=document.createElement('div'); sub.className='tabs subbar'; sub.hidden=true;
-  tabs.after(bar); bar.after(sub); tabs.style.display='none';
-  const wasHidden=tabs.hidden; bar.hidden=wasHidden;
-  function renderSub(subj){ const g=byS[subj]; sub.innerHTML=g.items.map(it=>`<button class="tab sub" data-key="${it.key}">${esc(it.label)}${it.tab.dataset.fin?' ✓':''}</button>`).join(''); sub.hidden=false; }
-  function mark(key){ const g=groups.find(g=>g.items.some(i=>i.key===key)); if(!g) return; bar.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.subj===g.subj)); if(sub.dataset.subj!==g.subj){ renderSub(g.subj); sub.dataset.subj=g.subj; } sub.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.key===key)); }
-  bar.innerHTML=groups.map(g=>`<button class="tab" data-subj="${esc(g.subj)}">${esc(g.subj)}</button>`).join('');
-  bar.addEventListener('click',e=>{ const b=e.target.closest('[data-subj]'); if(!b) return; const g=byS[b.dataset.subj]; show(g.items[0].key); });
-  sub.addEventListener('click',e=>{ const b=e.target.closest('[data-key]'); if(!b) return; show(b.dataset.key); });
-  const _show=window.show; window.show=function(key){ _show(key); mark(key); };
-  // 「全部內容」切換時同步顯示科目列
-  const mo=new MutationObserver(()=>{ bar.hidden=tabs.hidden; if(tabs.hidden) sub.hidden=true; }); mo.observe(tabs,{attributes:true,attributeFilter:['hidden']});
-  const cur=document.querySelector('.set.on'); if(cur) mark(cur.id.slice(4));
-})();
-
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
 const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np", "from": 1, "to": 10, "label": "英文補洞 A 組 第 1–10 題", "min": 5, "note": "先念三步驟口訣再開始"}]};
 (function(){
@@ -3928,21 +3905,39 @@ const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np
     TODAY.tasks.forEach((t,i)=>{ const d=doneOf(t); const fin=d&&d.done>=d.total; if(fin){ fins.push(t.label); return; }
       rows.push(`<div class="task"><div class="tl"><b>${rows.length+1}.</b> ${esc(t.label)} <span class="tm">約 ${t.min} 分鐘</span>${t.note?`<div class="tn">${esc(t.note)}</div>`:''}</div><div class="tr">${d&&d.done?`<span class="tp">${d.done}／${d.total}</span>`:''}${t.href?`<a class="gbtn go" href="${esc(t.href)}">去做 →</a>`:`<button class="gbtn go" data-go="${i}">去做 →</button>`}</div></div>`); });
     const allFin=rows.length===0;
-    box.innerHTML=`<div class="th"><b>📌 今天只做這個</b><span>${TODAY.date}・共約 ${TODAY.budget_min} 分鐘</span></div>${rows.join('')}${fins.length?`<div class="donel">✓ 今天完成：${fins.map(esc).join('、')}</div>`:''}${allFin?'<div class="alldone">🎉 今天的做完了，可以關掉了。想多做再點下面「全部內容」。</div>':''}<button class="gbtn more" id="showall" type="button">全部內容 ▾</button>`;
+    box.innerHTML=`<div class="th"><b>📌 今天只做這個</b><span>${TODAY.date}・共約 ${TODAY.budget_min} 分鐘</span></div>${rows.join('')}${fins.length?`<div class="donel">✓ 今天完成：${fins.map(esc).join('、')}</div>`:''}${allFin?'<div class="alldone">🎉 今天的做完了，可以關掉了。想多做再從下面選一科。</div>':''}`;
     // 整份做完的頁簽標 ✓ 並排到最後
     DATA.forEach(set=>{ const st=state[set.key]||{}; const t=document.getElementById('tab-'+set.key); if(!t) return; const done=Object.keys(st).length>=set.items.length; if(done && !t.dataset.fin){ t.dataset.fin='1'; t.textContent='✓ '+t.textContent; t.parentElement.appendChild(t); } });
   }
   render(); main.insertBefore(box, main.firstChild);
-  tabs.hidden=true; document.querySelectorAll('.set').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.set').forEach(s=>s.classList.remove('on'));
   box.addEventListener('click',e=>{
-    const b=e.target.closest('[data-go]'); const m=e.target.closest('#showall');
-    if(m){ tabs.hidden=!tabs.hidden; m.textContent=tabs.hidden?'全部內容 ▾':'收起 ▴'; if(!tabs.hidden && !document.querySelector('.set.on')) show(DATA[0].key); return; }
-    if(!b) return; const t=TODAY.tasks[+b.dataset.go]; tabs.hidden=false; show(t.set);
+    const b=e.target.closest('[data-go]'); if(!b) return; const t=TODAY.tasks[+b.dataset.go]; show(t.set);
     const sec=document.getElementById('set-'+t.set); if(!sec) return;
     if(t.from||t.to){ const set=DATA.find(s=>s.key===t.set); const from=t.from||1,to=t.to||set.items.length; sec.querySelectorAll('article.q').forEach(a=>{ const n=+a.dataset.n; a.classList.toggle('dim', !(n>=from&&n<=to)); }); const first=sec.querySelector(`#q-${t.set}-${from}`); if(first) setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'start'}),50); }
     else setTimeout(()=>sec.scrollIntoView({behavior:'smooth',block:'start'}),50);
   });
   document.addEventListener('click',e=>{ if(e.target.closest('.opt,[data-cj],.reveal,[data-act="recited"]')) setTimeout(render,0); });
+})();
+
+// ---- 兩層導覽：上層只有科目，下層才是該科的各份內容 ----
+(function(){
+  const SUBJ = {math:['數學','練習卷'], guided7:['數學','今天的作業'], eng:['英文','練習卷'], eng7np:['英文','補洞'], chi:['國文','練習卷'],
+                bio:['生物','練習卷'], bio7a:['生物','動畫'], bio7w:['生物','錯題'], bio7c:['生物','填空卡'],
+                emo:['英文','情緒動詞 50'], guided:['數學','引導解題'], concepts:['數學','第五冊觀念'], practice:['數學','獨自練習'], allmap:['數學','三年地圖']};
+  const tabs=document.getElementById('tabs'); const old=[...tabs.querySelectorAll('.tab')]; if(old.length<3) return;
+  const groups=[]; const byS={};
+  old.forEach(t=>{ const key=t.id.slice(4); const [subj,label]=SUBJ[key]||['其他', t.textContent.replace(/^✓ /,'')]; if(!byS[subj]){ byS[subj]={subj, items:[]}; groups.push(byS[subj]); } byS[subj].items.push({key,label,tab:t}); });
+  const bar=document.createElement('div'); bar.className='tabs subjbar'; bar.setAttribute('role','tablist');
+  const sub=document.createElement('div'); sub.className='tabs subbar'; sub.hidden=true;
+  tabs.style.display='none'; const todayBox=document.getElementById('today'); const main=document.getElementById('main'); if(todayBox){ todayBox.after(bar); } else { tabs.after(bar); } bar.after(sub);
+  function renderSub(subj){ const g=byS[subj]; sub.innerHTML=g.items.map(it=>`<button class="tab sub" data-key="${it.key}">${esc(it.label)}${it.tab.dataset.fin?' ✓':''}</button>`).join(''); sub.hidden=false; }
+  function mark(key){ const g=groups.find(g=>g.items.some(i=>i.key===key)); if(!g) return; bar.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.subj===g.subj)); if(sub.dataset.subj!==g.subj){ renderSub(g.subj); sub.dataset.subj=g.subj; } sub.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.dataset.key===key)); }
+  bar.innerHTML=groups.map(g=>`<button class="tab" data-subj="${esc(g.subj)}">${esc(g.subj)}</button>`).join('');
+  bar.addEventListener('click',e=>{ const b=e.target.closest('[data-subj]'); if(!b) return; const g=byS[b.dataset.subj]; show(g.items[0].key); });
+  sub.addEventListener('click',e=>{ const b=e.target.closest('[data-key]'); if(!b) return; show(b.dataset.key); });
+  const _show=window.show; window.show=function(key){ _show(key); mark(key); };
+  const cur=document.querySelector('.set.on'); if(cur) mark(cur.id.slice(4));
 })();
 </script></body>
 </html>
