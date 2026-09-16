@@ -73,6 +73,21 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .today .donel{font-size:13px;color:#2E8B57;margin-top:6px}
 .today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
 article.q.dim{opacity:.35}
+.pick{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);margin:0 0 14px;overflow:hidden}
+.pick .ph{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--tab);color:var(--ink);border:0;padding:11px 14px;font:700 15px/1.3 "Noto Sans TC",sans-serif;cursor:pointer;text-align:left}
+.pick .ph[aria-expanded="true"]{border-bottom:1px solid var(--line)}
+.pick .ph:focus-visible,.pick .pb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pick .pchev{color:var(--mute);font-size:13px}
+.pick .pbody{padding:2px 14px 12px}
+.pick .pdone{font-size:13px;color:var(--mute);padding:9px 0;border-bottom:1px dashed var(--line)}
+.pick .pgrp{font:800 14px/1.3 "Noto Sans TC",sans-serif;color:var(--accent);margin:12px 0 0;letter-spacing:.5px}
+.pick .pitem{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;padding:7px 0;border-top:1px dashed var(--line)}
+.pick .pl{font-size:14.5px;line-height:1.45;flex:1 1 40%}
+.pick .pn{display:block;font-size:12.5px;color:var(--mute)}
+.pick .pbs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pick .pb{border:1px solid var(--line);background:var(--tab);color:var(--ink);border-radius:999px;padding:5px 11px;font:500 13px/1 "Noto Sans TC",sans-serif;cursor:pointer;text-decoration:none;display:inline-block}
+.pick .pb:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:480px){.pick .pl{flex:1 1 100%}.pick .pbs{justify-content:flex-start}}
 .subjbar .tab{font-size:15px;font-weight:800}
 .hub .subjbar{display:contents}.hub .subjbar .tab{padding:8px 14px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent)}.hub .subjbar .tab[aria-selected="true"]{background:var(--accent);color:#fff}
 .subbar{margin-top:2px}.subbar .tab.sub{font-size:13px;padding:5px 11px;background:var(--tab)}.subbar .tab.sub[aria-selected="true"]{background:var(--accent);color:#fff}
@@ -229,6 +244,122 @@ article.q.dim{opacity:.35}
 .vline{min-height:44px;display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1.5px dashed var(--line);border-radius:10px;margin:8px 0} .vhint{color:var(--mute);font-size:13px}
 .vpool{display:flex;flex-wrap:wrap;gap:6px} .vtok{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 10px;font:600 15px/1.3 Nunito,"Noto Sans TC",sans-serif;cursor:pointer} .vtok.on{background:var(--good-soft);border-color:var(--good)} .vtok:disabled{opacity:.7;cursor:default}
 .vstreak{font-weight:800;color:#d35400;margin-left:8px}
+/* ---- 單字遊戲層 v1：角色卡 / 地圖 / 翻翻樂 / 猜字 ---- */
+.xmg{position:relative;margin:0 0 14px}
+.xmg-b{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);padding:12px 12px 10px}
+.xmg-top{display:flex;gap:12px;align-items:center}
+.xmg-av{position:relative;flex:0 0 auto;width:86px;height:86px;border-radius:22px;border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.xmg-av::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,var(--g1,#eee),var(--g2,#fafafa));opacity:.6}
+.xmg-av .xmg-face{position:relative;line-height:1;animation:xmg-bob 3.4s ease-in-out infinite}
+.xmg-av .xmg-acc{position:absolute;right:6px;top:5px;font-size:19px;line-height:1}
+.xmg-av .xmg-crumb{position:absolute;right:5px;bottom:4px;font-size:17px;line-height:1}
+.xmg-av.fed .xmg-face{animation:xmg-eat 1.5s ease-in-out infinite}
+.xmg-av.pop{animation:xmg-pop .45s ease-out}
+@keyframes xmg-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes xmg-eat{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.09) rotate(-5deg)}60%{transform:scale(.96) rotate(4deg)}}
+@keyframes xmg-pop{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
+.xmg-info{flex:1 1 auto;min-width:0}
+.xmg-lv{font:800 16px/1.2 Nunito,"Noto Sans TC",sans-serif;color:var(--ink)}
+.xmg-lv span{font:700 13px/1.2 "Noto Sans TC",sans-serif;color:var(--mute)}
+.xmg-bar{height:9px;border-radius:999px;background:var(--tab);margin:7px 0 6px;overflow:hidden}
+.xmg-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--good),var(--accent));transition:width .5s ease}
+.xmg-sub{font-size:12.5px;color:var(--mute);line-height:1.5}
+.xmg-sub b{color:var(--ink)}
+.xmg-meal{margin-top:4px;font-size:12.5px;color:var(--mute)}
+.xmg-meal .hungry{color:var(--accent);font-weight:700}
+
+/* 地圖 */
+.xmg-maprow{display:flex;gap:2px;overflow-x:auto;margin:12px -4px 0;padding:4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.xmg-isle{flex:0 0 auto;width:34px;border:0;background:transparent;padding:2px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:8px}
+.xmg-isle span{font-size:17px;line-height:1.1;filter:grayscale(1);opacity:.4}
+.xmg-isle i{font:700 9px/1 Nunito,sans-serif;color:var(--mute);font-style:normal}
+.xmg-isle.lit span{filter:none;opacity:1}
+.xmg-isle.cur span{filter:none;opacity:1;animation:xmg-bob 2s ease-in-out infinite}
+.xmg-isle.cur{background:var(--accent-soft)}
+.xmg-isle.cur i{color:var(--accent)}
+.xmg-isle:hover{background:var(--tab)}
+.xmg-mapmsg{font-size:12.5px;color:var(--mute);margin-top:4px}
+.xmg-mapmsg b{color:var(--ink)}
+
+/* 按鈕 */
+.xmg-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.xmg-go{border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:8px 15px;font:700 13.5px/1 "Noto Sans TC",sans-serif;cursor:pointer}
+.xmg-go.ghost{border-color:var(--line);background:var(--tab)}
+.xmg-go:hover{filter:brightness(.97)}
+
+/* 遊戲面板 */
+.xmg-stage:empty{display:none}
+.xmg-panel{margin-top:10px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);padding:12px}
+.xmg-hd{font:800 14.5px/1.4 "Noto Sans TC",sans-serif;color:var(--ink);margin-bottom:10px}
+.xmg-hd span{font:400 12.5px/1.5 "Noto Sans TC",sans-serif;color:var(--mute)}
+.xmg-note{margin-top:8px;font-size:12.5px;color:var(--mute)}
+.xmg-fire{font-weight:800;color:#d35400}
+
+/* 翻翻樂 */
+.xmg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.xmg-mc{aspect-ratio:1/1;min-height:62px;border:1.5px solid var(--line);border-radius:12px;background:var(--tab);color:var(--ink);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s}
+.xmg-mc .f{font:700 12.5px/1.25 Nunito,"Noto Sans TC",sans-serif;word-break:break-word;text-align:center}
+.xmg-mc:not(.up):not(.done) .f{font-size:23px;opacity:.45}
+.xmg-mc.up{background:var(--paper);border-color:var(--accent)}
+.xmg-mc.done{background:var(--good-soft);border-color:var(--good);cursor:default;opacity:.85}
+.xmg-mc:disabled{cursor:default}
+
+/* 猜字 */
+.xmg-zh{font:800 19px/1.3 "Noto Sans TC",sans-serif;color:var(--ink)}
+.xmg-zh i{font:600 12.5px/1 "Noto Sans TC",sans-serif;color:var(--mute);font-style:normal}
+.xmg-slots{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0 6px}
+.xmg-sl{width:26px;height:34px;border-bottom:2.5px solid var(--line);display:flex;align-items:center;justify-content:center;font:800 19px/1 Nunito,sans-serif;color:var(--ink);text-transform:lowercase}
+.xmg-sl.on{border-bottom-color:var(--good)}
+.xmg-gap{width:12px;display:inline-block}
+.xmg-fb{min-height:22px;font-size:13.5px;margin-bottom:6px}
+.xmg-fb .ok{color:var(--good);font-weight:800}
+.xmg-fb .no{color:var(--bad);font-weight:700}
+.xmg-kb{margin-top:6px}
+.xmg-krow{display:flex;justify-content:center;gap:4px;margin-bottom:4px}
+.xmg-key{flex:1 1 0;min-width:0;max-width:38px;height:38px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:700 15px/1 Nunito,sans-serif;cursor:pointer;text-transform:lowercase}
+.xmg-key.good{background:var(--good-soft);border-color:var(--good)}
+.xmg-key.bad{opacity:.32}
+.xmg-key:disabled{cursor:default}
+
+/* 結尾 */
+.xmg-done{font:800 16px/1.4 "Noto Sans TC",sans-serif;color:var(--ink);text-align:center;padding:6px 0}
+.xmg-learn{margin-top:8px;padding:10px;border-radius:10px;background:var(--why)}
+.xmg-learn .t{font-size:12.5px;color:var(--mute);margin-bottom:6px}
+.xmg-w{display:inline-block;margin:0 6px 6px 0;padding:5px 9px;border-radius:999px;border:1.5px solid var(--line);background:var(--paper);font:700 13.5px/1.2 Nunito,"Noto Sans TC",sans-serif;cursor:pointer}
+.xmg-w i{font:400 12.5px/1.2 "Noto Sans TC",sans-serif;color:var(--mute);font-style:normal}
+.xmg-xp{margin-top:8px;text-align:center;font-size:13px;color:var(--mute)}
+
+/* 我的累積 */
+.xmg-nums{display:flex;flex-wrap:wrap;gap:8px}
+.xmg-tile{flex:1 1 84px;border:1.5px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;background:var(--why)}
+.xmg-tile .e{font-size:17px;line-height:1.2}
+.xmg-tile .n{font:800 20px/1.2 Nunito,sans-serif;color:var(--ink)}
+.xmg-tile .t{font-size:11.5px;color:var(--mute)}
+.xmg-wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.xmg-bg{border:1.5px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;opacity:.45;background:var(--paper)}
+.xmg-bg.on{opacity:1;background:var(--good-soft);border-color:var(--good)}
+.xmg-bg .e{font-size:21px;line-height:1.2;filter:grayscale(1)}
+.xmg-bg.on .e{filter:none}
+.xmg-bg .n{font:800 12px/1.3 "Noto Sans TC",sans-serif;color:var(--ink);margin-top:2px}
+.xmg-bg .c{font-size:10.5px;color:var(--mute);line-height:1.35;margin-top:2px}
+
+/* toast */
+.xmg-toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,8px);background:var(--sel);color:var(--sel-ink);padding:8px 14px;border-radius:999px;font:700 13px/1 "Noto Sans TC",sans-serif;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9999;white-space:nowrap}
+.xmg-toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:430px){
+  .xmg-av{width:74px;height:74px;border-radius:18px}
+  .xmg-mc{min-height:56px}
+  .xmg-mc .f{font-size:11.5px}
+  .xmg-key{height:34px;font-size:14px}
+  .xmg-sl{width:22px;height:30px;font-size:17px}
+}
+:root[data-theme="dark"] .xmg-av::before{opacity:.4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .xmg-av::before{opacity:.4}}
+@media (prefers-reduced-motion:reduce){
+  .xmg-av .xmg-face,.xmg-av.fed .xmg-face,.xmg-isle.cur span,.xmg-av.pop{animation:none!important}
+  .xmg-bar i,.xmg-toast,.xmg-mc{transition:none!important}
+}
 .syncbadge{position:fixed;right:10px;bottom:10px;z-index:50;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--good-soft);color:var(--ink);border:1px solid var(--line);cursor:pointer;opacity:.92}
 .syncbadge.warn{background:var(--bad-soft)}
 .synctop{margin:8px 0;padding:10px 12px;border-radius:12px;background:var(--bad-soft);border:1.5px solid var(--line);font-weight:700;cursor:pointer;text-align:center}
@@ -455,7 +586,520 @@ const VOCAB = {"title": "一年 2000 字", "perDay": 6, "target": 1999, "placeme
     else if(m==='unit'){ const u=rnd(UNIT,dayNo); document.getElementById('varea').innerHTML=`<div class="vlearn">${UNIT.map(w=>`<div class="vcard"><div class="ven">${esc(w.en)} <span class="pt">${esc(w.pos||'')}</span> <button class="vsay" data-say="${esc(w.en)}">🔊</button></div><div class="vzh">${esc(w.zh)}</div></div>`).join('')}</div><button class="gbtn" data-v="unitspell">拼這課 10 個</button> <button class="gbtn" data-v="unitchoose">選這課 10 個</button>`; }
     else if(m==='unitspell') spell(rnd(UNIT,dayNo).slice(0,10)); else if(m==='unitchoose') choose(rnd(UNIT,dayNo+1).slice(0,10));
     else if(m==='list'){ const rows=BANK.filter(w=>D.known[w.en]||D.intro[w.en]); document.getElementById('varea').innerHTML=`<div style="font-size:13px;color:var(--mute);margin:6px 0">認得 ${Object.keys(D.known).length}・學過 ${introduced().length}・到期 ${dueList().length}・連續天數 ${Object.keys(D.done).filter(k=>D.done[k].drill).length} 天有做</div><table class="vt"><thead><tr><th>英文</th><th>中文</th><th>狀態</th></tr></thead><tbody>${rows.slice(-120).reverse().map(w=>{ const s=S[w.en]; return `<tr><td>${esc(w.en)}</td><td>${esc(w.zh)}</td><td>${D.known[w.en]?'認得':(!s?'新':(isDue(w)?'到期':(s.next?'回來中':(s.ok>=2?'畢業':'學過'))))}</td></tr>`; }).join('')}</tbody></table>`; } });
+  // 對外掛鉤：遊戲層（vocab_game.js）用同一份字庫與進度
+  window.XMV = { D, save, mark, st, BANK, UNIT, ALL, byEn, dueList, introduced, learned, newToday, say, rnd, dayNo, today, PER, TARGET, home, esc: (typeof esc==='function'?esc:String), sec, isDue };
   home();
+  document.dispatchEvent(new CustomEvent('xmv-ready'));
+})();
+
+// ---- 單字遊戲層 v1（9/16）：角色卡 + 島嶼地圖 + 翻翻樂 + 猜字 ----
+// 原則：沒有倒數計時、沒有扣血、沒有分數排名、沒有整關重來。遊戲只幫「練習」，不搶「學習」。
+// 進度一律透過 XMV.mark(w, ok) 寫；自己的資料放 XMV.D.game 命名空間。
+(function(){
+  if(window.__XMG__) return; window.__XMG__ = 1;
+
+  function boot(){
+    var V = window.XMV;
+    if(!V || !V.sec || !V.BANK || !V.BANK.length) return;
+    if(document.getElementById('xmg')) return;
+
+    var D = V.D;
+    if(!D.game || typeof D.game !== 'object') D.game = {};
+    var G = D.game;
+    G.xp = G.xp || 0;
+    G.badges = G.badges || {};
+    G.fed = G.fed || {};
+    G.plays = G.plays || {};
+    V.save();
+
+    var esc = function(s){
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+        return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+      });
+    };
+    var DAY = 86400000;
+
+    // ---------- 角色 ----------
+    // 角色：XMV.ROLE_EMOJI 優先 → 網址 /w/ ／ /c/ → 頁面的 ROLE / PAGE_ROLE（mei=國一、jie=國三）→ 預設 🐱
+    var FACE = (function(){
+      if(V.ROLE_EMOJI) return V.ROLE_EMOJI;
+      var p = String(location.pathname || '');
+      if(p.indexOf('/w/') >= 0) return '🐵';
+      if(p.indexOf('/c/') >= 0) return '🐱';
+      var r = '';
+      try{ if(typeof ROLE !== 'undefined') r = ROLE; }catch(e){}
+      try{ if(!r && typeof PAGE_ROLE !== 'undefined') r = PAGE_ROLE; }catch(e){}
+      if(r === 'mei') return '🐵';
+      return '🐱';
+    })();
+    var ACC  = ['','','','','🎀','🧣','🎒','👑','⭐','🌈','🍀','🔔','🎧','🧢','🛡️','🗝️','🪄','🎩','💎','🌟'];
+    var TITLE = ['剛出發','小小旅人','會認路了','走得很穩','帶著小緞帶','圍上圍巾','背起背包','戴上小皇冠','閃閃發光','跨過彩虹',
+                 '幸運草','鈴鐺響','聽得見全世界','戴上小帽','守護者','拿到鑰匙','小魔法','魔術師','寶石獵人','星星旅人'];
+    var SKY = [['#FDE9DE','#FBF3E6'],['#E6F2E9','#F3F7E9'],['#E4EEF8','#EDE9F8'],
+               ['#F8E7F1','#F3E9FB'],['#FBF0DA','#E9F4EE'],['#E9ECF8','#FAE9EC']];
+    var LV = [0,25,50,100,150,200];
+    while(LV.length < 20) LV.push(LV[LV.length-1] + 100);
+
+    function gradCount(){
+      return V.BANK.filter(function(w){
+        var s = D.S[w.en];
+        return s && s.ok >= 2 && !s.next;
+      }).length;
+    }
+    function knownCount(){ return Object.keys(D.known || {}).length; }
+    function levelOf(g){
+      var lv = 1;
+      for(var i = 0; i < LV.length; i++){ if(g >= LV[i]) lv = i + 1; }
+      return lv;
+    }
+
+    // ---------- 今天餵了嗎 / 連續天數 ----------
+    function fedOn(date){
+      var d = D.done && D.done[date];
+      return !!(d && d.newDone && d.drill);
+    }
+    function drillOn(date){
+      var d = D.done && D.done[date];
+      return !!(d && d.drill);
+    }
+    function dstr(ms){ return new Date(ms).toISOString().slice(0,10); }
+    function todayMs(){ return new Date(new Date().toDateString()).getTime(); }
+    function streakDays(){
+      var t = todayMs();
+      if(!drillOn(dstr(t))) t -= DAY;          // 今天還沒做不算斷，從昨天往回數
+      var n = 0;
+      while(drillOn(dstr(t)) && n < 400){ n++; t -= DAY; }
+      return n;
+    }
+    function activeDays(){
+      return Object.keys(D.done || {}).filter(function(k){ return D.done[k] && D.done[k].drill; }).length;
+    }
+
+    // ---------- 徽章 ----------
+    var BADGES = [
+      { k:'mem1',     e:'🃏',  n:'第一次翻翻樂', c:'玩過一次翻翻樂' },
+      { k:'guess1',   e:'🔤',  n:'第一次猜字',   c:'玩過一次猜字' },
+      { k:'d3',       e:'🌱',  n:'連續 3 天',    c:'連續 3 天有做 ②③' },
+      { k:'d7',       e:'🌿',  n:'連續 7 天',    c:'連續 7 天有做 ②③' },
+      { k:'d14',      e:'🌳',  n:'連續 14 天',   c:'連續 14 天有做 ②③' },
+      { k:'d30',      e:'🏕️', n:'連續 30 天',   c:'連續 30 天有做 ②③' },
+      { k:'known100', e:'👀',  n:'認得 100 字',  c:'快篩裡認得 100 個字' },
+      { k:'g50',      e:'🎓',  n:'畢業 50 字',   c:'50 個字對兩次畢業' },
+      { k:'g100',     e:'🏅',  n:'畢業 100 字',  c:'100 個字畢業' },
+      { k:'g200',     e:'🏆',  n:'畢業 200 字',  c:'200 個字畢業' },
+      { k:'g500',     e:'👑',  n:'畢業 500 字',  c:'500 個字畢業' }
+    ];
+    var BY_K = {}; BADGES.forEach(function(b){ BY_K[b.k] = b; });
+
+    function grant(k){
+      if(G.badges[k]) return false;
+      G.badges[k] = V.today;
+      V.save();
+      var b = BY_K[k];
+      if(b) toast(b.e + ' 拿到徽章：' + b.n);
+      return true;
+    }
+    function checkBadges(){
+      var s = streakDays(), g = gradCount(), kn = knownCount();
+      [3,7,14,30].forEach(function(n){ if(s >= n) grant('d' + n); });
+      if(kn >= 100) grant('known100');
+      [50,100,200,500].forEach(function(n){ if(g >= n) grant('g' + n); });
+    }
+
+    // ---------- 選字池 ----------
+    function clean(en){
+      return String(en || '').replace(/\(.*?\)/g, ' ').split('/')[0].replace(/\s+/g, ' ').trim();
+    }
+    function spellable(w){
+      var c = clean(w && w.en);
+      return /^[A-Za-z][A-Za-z' -]*$/.test(c) && c.length >= 2 && c.length <= 14;
+    }
+    function pickWords(n, lettersOnly){
+      var seenEn = {}, seenZh = {}, out = [];
+      function add(arr){
+        if(!arr) return;
+        for(var i = 0; i < arr.length && out.length < n; i++){
+          var w = arr[i];
+          if(!w || !w.en || !w.zh) continue;
+          if(seenEn[w.en] || seenZh[w.zh]) continue;
+          if(lettersOnly && !spellable(w)) continue;
+          seenEn[w.en] = 1; seenZh[w.zh] = 1; out.push(w);
+        }
+      }
+      try{ add(V.newToday()); }catch(e){}
+      try{ add(V.dueList()); }catch(e){}
+      try{ add(V.rnd(V.introduced(), V.dayNo + 13)); }catch(e){}
+      if(out.length < n){ try{ add(V.rnd(V.BANK, V.dayNo + (lettersOnly ? 29 : 17))); }catch(e){} }
+      return out;
+    }
+    function shuffle(a, seed){ return V.rnd(a, seed || (Date.now() % 100000)); }
+
+    function addXp(n){
+      G.xp = (G.xp || 0) + n;
+      V.save();
+      var av = root.querySelector('.xmg-av');
+      if(av){ av.classList.remove('pop'); void av.offsetWidth; av.classList.add('pop'); }
+    }
+
+    // ---------- 掛載 ----------
+    var root = document.createElement('div');
+    root.className = 'xmg';
+    root.id = 'xmg';
+
+    function mount(){
+      if(root.parentNode === V.sec) return;
+      V.sec.insertBefore(root, V.sec.firstChild);
+    }
+    try{
+      new MutationObserver(function(){
+        if(root.parentNode !== V.sec){ mount(); render(); }
+      }).observe(V.sec, { childList: true });
+    }catch(e){}
+
+    function toast(msg){
+      var t = root.querySelector('.xmg-toast');
+      if(!t){
+        t = document.createElement('div'); t.className = 'xmg-toast';
+        root.appendChild(t);
+      }
+      t.textContent = msg;
+      t.classList.remove('on'); void t.offsetWidth; t.classList.add('on');
+      setTimeout(function(){ if(t) t.classList.remove('on'); }, 2600);
+    }
+
+    // ---------- 角色卡 HTML ----------
+    function headHTML(){
+      var g = gradCount(), kn = knownCount(), lv = levelOf(g);
+      var base = LV[lv-1], next = (lv < 20) ? LV[lv] : null;
+      var pct = next ? Math.max(4, Math.round(100 * (g - base) / (next - base))) : 100;
+      var left = next ? (next - g) : 0;
+      var sky = SKY[(lv - 1) % SKY.length];
+      var acc = ACC[lv - 1] || '';
+      var fed = fedOn(V.today);
+      if(fed && !G.fed[V.today]){ G.fed[V.today] = 1; V.save(); }
+      var s = streakDays(), due = V.dueList().length;
+
+      var h = '<div class="xmg-b">';
+      h += '<div class="xmg-top">';
+      h += '<div class="xmg-av' + (fed ? ' fed' : '') + '" style="--g1:' + sky[0] + ';--g2:' + sky[1] + '">'
+         +   '<span class="xmg-face" style="font-size:' + (34 + Math.min(lv, 14) * 1.3).toFixed(0) + 'px">' + FACE + '</span>'
+         +   (acc ? '<span class="xmg-acc">' + acc + '</span>' : '')
+         +   (fed ? '<span class="xmg-crumb">😋</span>' : '')
+         + '</div>';
+      h += '<div class="xmg-info">';
+      h +=   '<div class="xmg-lv">Lv ' + lv + '　<span>' + esc(TITLE[lv-1] || '') + '</span></div>';
+      h +=   '<div class="xmg-bar"><i style="width:' + pct + '%"></i></div>';
+      h +=   '<div class="xmg-sub">' + (next
+               ? '畢業 <b>' + g + '</b> 個字了，再 <b>' + left + '</b> 個升 Lv ' + (lv+1)
+               : '畢業 <b>' + g + '</b> 個字，滿級了喵 🌟')
+             + (kn ? '　｜　認得 ' + kn + ' 個' : '') + '</div>';
+      h +=   '<div class="xmg-meal">' + (fed
+               ? '😋 今天吃飽了'
+               : '<span class="hungry">🍚 還沒吃飯</span>　做完 ①②③ 就餵到牠囉')
+             + (s >= 2 ? '　🔥 連續 ' + s + ' 天' : '') + '</div>';
+      h += '</div></div>';
+
+      // 地圖
+      h += '<div class="xmg-maprow" id="xmg-map">' + mapHTML(g) + '</div>';
+      h += '<div class="xmg-mapmsg" id="xmg-mapmsg">' + mapMsg(g) + '</div>';
+
+      // 按鈕
+      h += '<div class="xmg-btns">'
+         +   '<button type="button" class="xmg-go" data-g="mem">🃏 翻翻樂</button>'
+         +   '<button type="button" class="xmg-go" data-g="guess">🔤 猜字</button>'
+         +   '<button type="button" class="xmg-go ghost" data-g="stats">📦 我的累積</button>'
+         + '</div>';
+      h += '</div>';
+      return h;
+    }
+
+    function mapHTML(g){
+      var cur = Math.min(39, Math.floor(g / 50));
+      var out = '';
+      for(var i = 0; i < 40; i++){
+        var cls = i < cur ? 'lit' : (i === cur ? 'cur' : 'far');
+        var ic  = i < cur ? '🏝️' : (i === cur ? '📍' : '⚪');
+        out += '<button type="button" class="xmg-isle ' + cls + '" data-g="isle" data-i="' + i + '" '
+             + 'aria-label="第 ' + (i+1) + ' 座島"><span>' + ic + '</span><i>' + (i+1) + '</i></button>';
+      }
+      return out;
+    }
+    function mapMsg(g){
+      var cur = Math.min(39, Math.floor(g / 50));
+      var left = (cur + 1) * 50 - g;
+      if(g >= 2000) return '四十座島全部點亮了，好厲害喵 🌟';
+      return '現在在第 <b>' + (cur+1) + '</b> 座島，還差 <b>' + left + '</b> 個字就點亮它。';
+    }
+
+    function render(){
+      root.innerHTML = headHTML() + '<div class="xmg-stage" id="xmg-stage"></div>';
+      var m = root.querySelector('#xmg-map');
+      if(m){
+        var c = m.querySelector('.cur');
+        if(c) m.scrollLeft = Math.max(0, c.offsetLeft - m.clientWidth / 2 + 24);
+      }
+      checkBadges();
+    }
+    function stage(){ return root.querySelector('#xmg-stage'); }
+    function refreshHead(){
+      var b = root.querySelector('.xmg-b');
+      if(!b) return render();
+      var tmp = document.createElement('div');
+      tmp.innerHTML = headHTML();
+      b.innerHTML = tmp.firstChild.innerHTML;
+      checkBadges();
+    }
+
+    // ---------- 共用結尾 ----------
+    function finishBox(words, xp, best, extra){
+      var h = '<div class="xmg-done">🎉 玩完了';
+      if(best >= 3) h += '　<span class="xmg-fire">🔥 連對 ' + best + '</span>';
+      h += '</div>';
+      if(words.length){
+        h += '<div class="xmg-learn"><div class="t">學到了：</div>'
+           + words.map(function(w){
+               return '<span class="xmg-w" data-g="say" data-en="' + esc(w.en) + '">'
+                    + esc(clean(w.en)) + ' <i>' + esc(w.zh) + '</i> 🔊</span>';
+             }).join('')
+           + '</div>';
+      }
+      h += '<div class="xmg-xp">+' + xp + ' XP　小' + FACE + ' 吃得很開心</div>';
+      if(extra) h += extra;
+      h += '<div class="xmg-btns"><button type="button" class="xmg-go" data-g="again">再玩一次</button>'
+         + '<button type="button" class="xmg-go ghost" data-g="close">回去</button></div>';
+      return h;
+    }
+
+    // ---------- 遊戲一：翻翻樂 ----------
+    var lastGame = null;
+    function memGame(){
+      lastGame = memGame;
+      grant('mem1');
+      G.plays.mem = (G.plays.mem || 0) + 1; V.save();
+      var ws = pickWords(8, false);
+      var st = stage();
+      if(ws.length < 4){ st.innerHTML = '<div class="xmg-done">字還不夠，先做 ① 今天的新字喵～</div>'; return; }
+      var cards = [];
+      ws.forEach(function(w){ cards.push({ w:w, k:'en' }); cards.push({ w:w, k:'zh' }); });
+      cards = shuffle(cards, Date.now() % 90000);
+
+      var open = [], lock = false, matched = 0, xp = 0, streak = 0, best = 0, got = [];
+
+      st.innerHTML = '<div class="xmg-panel">'
+        + '<div class="xmg-hd">🃏 翻翻樂　<span>把英文和中文配成一對，配錯只是翻回去，什麼都不會扣</span></div>'
+        + '<div class="xmg-grid" id="xmg-grid"></div>'
+        + '<div class="xmg-note" id="xmg-note"></div>'
+        + '<div class="xmg-btns"><button type="button" class="xmg-go ghost" data-g="close">先回去</button></div>'
+        + '</div>';
+      var grid = st.querySelector('#xmg-grid');
+      cards.forEach(function(c, idx){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'xmg-mc';
+        b.innerHTML = '<span class="f">🐾</span>';
+        b.onclick = function(){ flip(idx, b); };
+        c.el = b; grid.appendChild(b);
+      });
+      note();
+
+      function note(){
+        var n = st.querySelector('#xmg-note');
+        if(!n) return;
+        n.innerHTML = '配對 ' + matched + '／' + ws.length
+                    + (streak >= 3 ? '　<span class="xmg-fire">🔥 連對 ' + streak + '</span>' : '');
+      }
+      function label(c){ return c.k === 'en' ? clean(c.w.en) : c.w.zh; }
+      function flip(i, b){
+        var c = cards[i];
+        if(lock || c.done || c.open) return;
+        c.open = true;
+        b.classList.add('up');
+        b.querySelector('.f').textContent = label(c);
+        open.push(i);
+        if(open.length < 2) return;
+        lock = true;
+        var a = cards[open[0]], d = cards[open[1]];
+        if(a.w.en === d.w.en){
+          setTimeout(function(){
+            [a,d].forEach(function(x){ x.done = true; x.el.classList.add('done'); x.el.disabled = true; });
+            V.mark(a.w, true);
+            addXp(2); xp += 2; streak++; if(streak > best) best = streak;
+            got.push(a.w); matched++;
+            try{ V.say(a.w.en); }catch(e){}
+            open = []; lock = false; note();
+            if(matched === ws.length) done();
+          }, 380);
+        }else{
+          streak = 0;
+          setTimeout(function(){
+            [a,d].forEach(function(x){
+              x.open = false; x.el.classList.remove('up'); x.el.querySelector('.f').textContent = '🐾';
+            });
+            open = []; lock = false; note();
+          }, 800);
+        }
+      }
+      function done(){
+        st.innerHTML = '<div class="xmg-panel">' + finishBox(got, xp, best, '') + '</div>';
+        refreshHead();
+      }
+    }
+
+    // ---------- 遊戲二：猜字 ----------
+    var ROWS = ['qwertyuiop','asdfghjkl','zxcvbnm'];
+    function guessGame(){
+      lastGame = guessGame;
+      grant('guess1');
+      G.plays.guess = (G.plays.guess || 0) + 1; V.save();
+      var ws = pickWords(6, true);
+      var st = stage();
+      if(!ws.length){ st.innerHTML = '<div class="xmg-done">字還不夠，先做 ① 今天的新字喵～</div>'; return; }
+      var i = 0, xp = 0, streak = 0, best = 0, got = [], cur = null;
+      guessGame.route = function(act, val){
+        if(!cur) return;
+        if(act === 'key') cur.hit(val);
+        else if(act === 'reveal') cur.reveal();
+        else if(act === 'next') cur.next();
+      };
+      step();
+
+      function step(){
+        if(i >= ws.length){
+          st.innerHTML = '<div class="xmg-panel">' + finishBox(got, xp, best, '') + '</div>';
+          refreshHead();
+          return;
+        }
+        var w = ws[i], word = clean(w.en), ch = word.split('');
+        var shown = ch.map(function(c, k){ return !/[A-Za-z]/.test(c) || k === 0; });
+        var used = {}, ended = false;
+
+        draw();
+
+        function full(){ return shown.every(Boolean); }
+        function slots(){
+          return ch.map(function(c, k){
+            if(!/[A-Za-z]/.test(c)) return '<span class="xmg-gap">' + (c === ' ' ? '&nbsp;' : esc(c)) + '</span>';
+            return '<span class="xmg-sl' + (shown[k] ? ' on' : '') + '">' + (shown[k] ? esc(c) : '') + '</span>';
+          }).join('');
+        }
+        function keys(){
+          return ROWS.map(function(r){
+            return '<div class="xmg-krow">' + r.split('').map(function(L){
+              var s = used[L] ? (' ' + used[L]) : '';
+              return '<button type="button" class="xmg-key' + s + '" data-g="key" data-k="' + L + '"'
+                   + (used[L] ? ' disabled' : '') + '>' + L + '</button>';
+            }).join('') + '</div>';
+          }).join('');
+        }
+        function draw(){
+          st.innerHTML = '<div class="xmg-panel">'
+            + '<div class="xmg-hd">🔤 猜字　<span>' + (i+1) + '／' + ws.length + '　猜錯沒關係，字母只會變灰</span></div>'
+            + '<div class="xmg-zh">' + esc(w.zh) + (w.pos ? ' <i>' + esc(w.pos) + '</i>' : '') + '</div>'
+            + '<div class="xmg-slots" id="xmg-slots">' + slots() + '</div>'
+            + '<div class="xmg-fb" id="xmg-fb">' + (streak >= 3 ? '<span class="xmg-fire">🔥 連對 ' + streak + '</span>' : '') + '</div>'
+            + '<div class="xmg-kb" id="xmg-kb">' + keys() + '</div>'
+            + '<div class="xmg-btns"><button type="button" class="xmg-go ghost" data-g="reveal">看答案</button>'
+            + '<button type="button" class="xmg-go ghost" data-g="close">先回去</button></div>'
+            + '</div>';
+        }
+        function redraw(){
+          var a = st.querySelector('#xmg-slots'); if(a) a.innerHTML = slots();
+          var b = st.querySelector('#xmg-kb'); if(b) b.innerHTML = keys();
+        }
+        function hit(L){
+          if(ended) return;
+          var got1 = false;
+          ch.forEach(function(c, k){
+            if(c.toLowerCase() === L && !shown[k]){ shown[k] = true; got1 = true; }
+          });
+          used[L] = got1 ? 'good' : 'bad';
+          redraw();
+          if(got1 && full()) win();
+        }
+        function win(){
+          ended = true;
+          V.mark(w, true); addXp(2); xp += 2; streak++; if(streak > best) best = streak;
+          got.push(w);
+          try{ V.say(w.en); }catch(e){}
+          var fb = st.querySelector('#xmg-fb');
+          if(fb) fb.innerHTML = '<span class="ok">✓ 拼出來了！' + esc(w.en) + '</span>'
+            + (streak >= 3 ? '　<span class="xmg-fire">🔥 連對 ' + streak + '</span>' : '')
+            + ' <button type="button" class="xmg-go" data-g="next">下一個 →</button>';
+          var kb = st.querySelector('#xmg-kb'); if(kb) kb.innerHTML = '';
+        }
+        function reveal(){
+          if(ended) return;
+          ended = true;
+          shown = shown.map(function(){ return true; });
+          streak = 0;
+          V.mark(w, false);
+          try{ V.say(w.en); }catch(e){}
+          redraw();
+          var fb = st.querySelector('#xmg-fb');
+          if(fb) fb.innerHTML = '<span class="no">答案是 <b>' + esc(w.en) + '</b>，這個字過幾天會再回來喵</span>'
+            + ' <button type="button" class="xmg-go" data-g="next">下一個 →</button>';
+          var kb = st.querySelector('#xmg-kb'); if(kb) kb.innerHTML = '';
+        }
+        cur = { hit: hit, reveal: reveal, next: function(){ i++; step(); } };
+      }
+    }
+
+    // ---------- 我的累積 ----------
+    function statsPanel(){
+      var g = gradCount(), kn = knownCount(), due = V.dueList().length, days = activeDays(), s = streakDays();
+      var h = '<div class="xmg-panel">';
+      h += '<div class="xmg-hd">📦 我的累積　<span>慢慢來，這些都是妳自己走出來的</span></div>';
+      h += '<div class="xmg-nums">'
+         + tile('📅', days, '天有做')
+         + tile('🎓', g, '個字畢業')
+         + tile('👀', kn, '個字認得')
+         + tile('⏰', due, '個字到期')
+         + (s >= 2 ? tile('🔥', s, '天連續') : '')
+         + '</div>';
+      h += '<div class="xmg-wall">' + BADGES.map(function(b){
+             var on = G.badges[b.k];
+             return '<div class="xmg-bg' + (on ? ' on' : '') + '">'
+                  + '<div class="e">' + b.e + '</div>'
+                  + '<div class="n">' + esc(b.n) + '</div>'
+                  + '<div class="c">' + (on ? esc(on) + ' 拿到' : esc(b.c)) + '</div></div>';
+           }).join('') + '</div>';
+      h += '<div class="xmg-btns"><button type="button" class="xmg-go ghost" data-g="close">收起來</button></div>';
+      h += '</div>';
+      stage().innerHTML = h;
+    }
+    function tile(e, n, t){
+      return '<div class="xmg-tile"><div class="e">' + e + '</div><div class="n">' + n + '</div><div class="t">' + t + '</div></div>';
+    }
+
+    // ---------- 事件 ----------
+    root.addEventListener('click', function(ev){
+      var b = ev.target.closest('[data-g]');
+      if(!b) return;
+      var a = b.dataset.g;
+      if(a === 'mem'){ memGame(); }
+      else if(a === 'guess'){ guessGame(); }
+      else if(a === 'stats'){ statsPanel(); }
+      else if(a === 'close'){ stage().innerHTML = ''; refreshHead(); }
+      else if(a === 'again'){ if(lastGame) lastGame(); }
+      else if(a === 'say'){ try{ V.say(b.dataset.en); }catch(e){} }
+      else if(a === 'isle'){
+        var idx = +b.dataset.i, g = gradCount(), cur = Math.min(39, Math.floor(g / 50));
+        var m = root.querySelector('#xmg-mapmsg');
+        if(!m) return;
+        if(idx < cur) m.innerHTML = '第 <b>' + (idx+1) + '</b> 座島已經點亮了 ✨';
+        else if(idx === cur) m.innerHTML = '這座島還差 <b>' + ((cur+1)*50 - g) + '</b> 個字。';
+        else m.innerHTML = '第 <b>' + (idx+1) + '</b> 座島還沒到，先把現在這座走完喵～';
+      }
+      else if(a === 'key' || a === 'reveal' || a === 'next'){
+        if(guessGame.route) guessGame.route(a, b.dataset.k);
+      }
+    });
+
+    mount();
+    render();
+  }
+
+  if(window.XMV) boot();
+  else document.addEventListener('xmv-ready', function(){ boot(); }, false);
 })();
 
 (function(){ const box=document.getElementById('askbox'); if(!box||typeof window.askXiaomi!=='function') return; box.hidden=false; document.getElementById('asksend').addEventListener('click',async()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; const msg=document.getElementById('askmsg'); if(!localStorage.getItem('xm_token')){ msg.textContent='先按右下角 🔑 輸入 PIN，小咪才收得到'; return; } const cur=document.querySelector('.set.on'); const ok=await window.askXiaomi(cur?cur.id.slice(4):'', v, location.pathname); msg.textContent=ok?'小咪收到了 ✓ 明天早上回妳':'先存起來了，有網路會自動送出'; document.getElementById('asktxt').value=''; }); })();
