@@ -69,6 +69,7 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .today .tr{display:flex;gap:8px;align-items:center;white-space:nowrap}.today .tp{font-size:13px;color:var(--mute)}.today .ok{color:#2E8B57;font-weight:800}
 .today .task.fin .tl{color:var(--mute);text-decoration:line-through}
 .today .go{padding:8px 14px;font-size:14px}.today .more{margin-top:8px;background:transparent;color:var(--mute);border:1px solid var(--line)}
+.today .donel{font-size:13px;color:#2E8B57;margin-top:6px}
 .today .alldone{margin-top:8px;font-weight:700;color:#2E8B57}
 article.q.dim{opacity:.35}
 
@@ -3891,9 +3892,13 @@ const TODAY = {"date": "2026-09-16", "budget_min": 15, "tasks": [{"set": "eng7np
   const box=document.createElement('section'); box.className='today'; box.id='today';
   const doneOf=t=>{ if(!t.set) return null; const set=DATA.find(s=>s.key===t.set); if(!set){ return null; } const st=state[t.set]||{}; const from=t.from||1, to=t.to||set.items.length; const ks=Object.keys(st).map(Number).filter(n=>n>=from&&n<=to); return {done:ks.length, total:to-from+1}; };
   function render(){
-    const rows=TODAY.tasks.map((t,i)=>{ const d=doneOf(t); const fin=d&&d.done>=d.total; return `<div class="task${fin?' fin':''}"><div class="tl"><b>${i+1}.</b> ${esc(t.label)} <span class="tm">約 ${t.min} 分鐘</span>${t.note?`<div class="tn">${esc(t.note)}</div>`:''}</div><div class="tr">${d?`<span class="tp">${d.done}／${d.total}</span>`:''}${fin?'<span class="ok">✓ 完成</span>':(t.href?`<a class="gbtn go" href="${esc(t.href)}">去做 →</a>`:`<button class="gbtn go" data-go="${i}">去做 →</button>`)}</div></div>`; }).join('');
-    const allFin=TODAY.tasks.every(t=>{ const d=doneOf(t); return d&&d.done>=d.total; });
-    box.innerHTML=`<div class="th"><b>📌 今天只做這個</b><span>${TODAY.date}・共約 ${TODAY.budget_min} 分鐘</span></div>${rows}${allFin?'<div class="alldone">🎉 今天的做完了，可以關掉了。想多做再點下面「全部內容」。</div>':''}<button class="gbtn more" id="showall" type="button">全部內容 ▾</button>`;
+    const fins=[], rows=[];
+    TODAY.tasks.forEach((t,i)=>{ const d=doneOf(t); const fin=d&&d.done>=d.total; if(fin){ fins.push(t.label); return; }
+      rows.push(`<div class="task"><div class="tl"><b>${rows.length+1}.</b> ${esc(t.label)} <span class="tm">約 ${t.min} 分鐘</span>${t.note?`<div class="tn">${esc(t.note)}</div>`:''}</div><div class="tr">${d&&d.done?`<span class="tp">${d.done}／${d.total}</span>`:''}${t.href?`<a class="gbtn go" href="${esc(t.href)}">去做 →</a>`:`<button class="gbtn go" data-go="${i}">去做 →</button>`}</div></div>`); });
+    const allFin=rows.length===0;
+    box.innerHTML=`<div class="th"><b>📌 今天只做這個</b><span>${TODAY.date}・共約 ${TODAY.budget_min} 分鐘</span></div>${rows.join('')}${fins.length?`<div class="donel">✓ 今天完成：${fins.map(esc).join('、')}</div>`:''}${allFin?'<div class="alldone">🎉 今天的做完了，可以關掉了。想多做再點下面「全部內容」。</div>':''}<button class="gbtn more" id="showall" type="button">全部內容 ▾</button>`;
+    // 整份做完的頁簽標 ✓ 並排到最後
+    DATA.forEach(set=>{ const st=state[set.key]||{}; const t=document.getElementById('tab-'+set.key); if(!t) return; const done=Object.keys(st).length>=set.items.length; if(done && !t.dataset.fin){ t.dataset.fin='1'; t.textContent='✓ '+t.textContent; t.parentElement.appendChild(t); } });
   }
   render(); main.insertBefore(box, main.firstChild);
   tabs.hidden=true; document.querySelectorAll('.set').forEach(s=>s.classList.remove('on'));
