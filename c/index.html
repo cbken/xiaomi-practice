@@ -57,6 +57,11 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .cjudge{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .drillbox{border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;margin:8px 0 12px;background:var(--accent-soft)}
 .notyet{font-size:12.5px;color:#8A5A00;background:#FFF4D6;border-radius:8px;padding:4px 8px;margin:4px 0 6px}
+.exportbtn{margin-left:8px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer}
+.exportbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--accent);border-radius:12px;background:var(--paper)}
+.exportbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}
+.exportbox textarea{width:100%;min-height:150px;font:13px/1.5 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;box-sizing:border-box;background:var(--tab);color:var(--ink)}
+.exportbox .eb{display:flex;gap:8px;margin-top:6px}
 
 .gp{padding:16px 0 20px;border-bottom:1px solid var(--line)}
 .gp h2{font:700 17px/1.4 "Noto Sans TC",sans-serif;margin:0 0 2px}
@@ -183,7 +188,7 @@ header .wrap{display:flex;flex-direction:column;gap:8px}
 .hub{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}.hub a{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.hub a.sheet{background:#2E7D4F}
 </style></head><body>
 <header><div class="wrap">
-<div class="brand"><h1>小咪練習室・C 🐱<small>數學、英文各有自己的頁</small></h1><div class="score" id="score"><b>0</b>/0</div></div>
+<div class="brand"><h1>小咪練習室・C 🐱<small>數學、英文各有自己的頁</small></h1><div class="score" id="score"><b>0</b>/0</div><button class="exportbtn" id="exportbtn" type="button">📤 今天的紀錄</button></div><div id="exportbox" class="exportbox" hidden><div class="eh"><b>今天的紀錄</b><span>全選複製，用 LINE 傳給爸爸</span></div><textarea id="exporttxt" readonly></textarea><div class="eb"><button class="gbtn" id="exportcopy" type="button">複製</button><button class="gbtn" id="exportclose" type="button">關閉</button></div></div>
 <div class="hub"><a href="math/">📐 國三數學 →</a><a href="eng/">🔤 國三英文 →</a><a class="sheet" href="https://docs.google.com/spreadsheets/d/19b9O3rLowgrhbHi6moMiS0kY7l6UOA142pmNq5yJAXk/edit" target="_blank" rel="noopener">📅 行事曆</a></div><div class="tabs" role="tablist" id="tabs"></div>
 </div></header>
 <main class="wrap" id="main"></main>
@@ -3531,5 +3536,20 @@ if (ROLE !== 'mei') renderPractice();
   sec.querySelectorAll('[data-widget]').forEach(w=>WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value));
   sec.addEventListener('input', e=>{ const w=e.target.closest('[data-widget]'); if(w) WIDGETS[w.dataset.widget].update(w.closest('.widget'), +w.value); });
 })();
+
+// ---- 📤 今天的紀錄：把這台裝置上的作答與過關狀態整理成文字，讓她用 LINE 傳給爸爸 ----
+function exportSummary(){
+  const L2='ABCDEFGH'; const d=new Date(); const lines=[`【${document.querySelector('h1').childNodes[0].textContent.trim()}】 ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`];
+  DATA.forEach(set=>{ const st=state[set.key]||{}; const ks=Object.keys(st); if(!ks.length) return;
+    const ok=ks.filter(n=>st[n].ok===true).length, ng=ks.filter(n=>st[n].ok===false).map(n=>n); const seen=ks.filter(n=>st[n].ok===null).length;
+    lines.push(`■ ${set.title}：作答 ${ks.length}／${set.items.length}${set.cards?`，記得 ${ok}、忘了 ${ng.length}${ng.length?'（'+ng.join('、')+'）':''}`:`，對 ${ok}${ng.length?'，錯 '+ng.length+' 題（第 '+ng.join('、')+' 題）':''}${seen?'，看答案 '+seen:''}`}`); });
+  try{ const w=JSON.parse(localStorage.getItem('xm_drill_wrong_v1')||'{}'); const ks=Object.keys(w); if(ks.length){ const t=new Date(new Date().toDateString()).getTime(); const due=ks.filter(k=>w[k].next<=t).length; lines.push(`■ 錯題回來名單：${ks.length} 題（今天到期 ${due}）：${ks.map(k=>k.replace(':',' #')).join('、')}`);} }catch(e){}
+  try{ if(typeof MASTERY!=='undefined'){ const v=Object.values(MASTERY); if(v.length){ lines.push(`■ 觀念：✓✓ 穩 ${v.filter(m=>m.st==='stable').length}、✓ 過一次 ${v.filter(m=>m.st==='once').length}、✗ 要重學 ${v.filter(m=>m.st==='failed').length}`); const t=new Date(new Date().toDateString()).getTime(); const due=Object.keys(MASTERY).filter(k=>MASTERY[k].n>=1&&MASTERY[k].next<=t); if(due.length) lines.push(`  今天該複習：${due.map(k=>(CONCEPTS[k]||{}).name||k).join('、')}`);} } }catch(e){}
+  if(lines.length===1) lines.push('（今天還沒有作答紀錄）');
+  return lines.join('\n');
+}
+document.getElementById('exportbtn').addEventListener('click',()=>{ const box=document.getElementById('exportbox'); document.getElementById('exporttxt').value=exportSummary(); box.hidden=false; box.scrollIntoView({behavior:'smooth',block:'start'}); });
+document.getElementById('exportclose').addEventListener('click',()=>{ document.getElementById('exportbox').hidden=true; });
+document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=document.getElementById('exporttxt'); ta.select(); const b=document.getElementById('exportcopy'); (navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>{b.textContent='已複製 ✓';}).catch(()=>{ try{document.execCommand('copy'); b.textContent='已複製 ✓';}catch(e){ b.textContent='請長按文字複製'; } }); });
 </script></body>
 </html>
