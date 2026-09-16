@@ -211,6 +211,20 @@ article.q.dim{opacity:.35}
 <main class="wrap" id="main"></main>
 <script>
 const DATA = []; const state = {};
+
+// ---- 背景紀錄（Google 表單）：LOG 未設定時完全不送任何請求 ----
+const LOG = null;   // {url:'https://docs.google.com/forms/d/e/<id>/formResponse', e:{page:'entry.111',item:'entry.222',picked:'entry.333',correct:'entry.444',ts:'entry.555',device:'entry.666'}}
+const PAGE_ROLE = 'jie';
+function logEvent(item, picked, correct){
+  if(!LOG || !LOG.url) return;
+  try{
+    const fd=new FormData(); fd.append(LOG.e.page, PAGE_ROLE); fd.append(LOG.e.item, item); fd.append(LOG.e.picked, String(picked)); fd.append(LOG.e.correct, correct===null?'seen':(correct?'1':'0')); fd.append(LOG.e.ts, new Date().toISOString());
+    let dev=''; try{ dev=localStorage.getItem('xm_device')||''; if(!dev){ dev=Math.random().toString(36).slice(2,8); localStorage.setItem('xm_device',dev);} }catch(e){}
+    fd.append(LOG.e.device, dev);
+    fetch(LOG.url,{method:'POST',mode:'no-cors',body:fd}).catch(()=>{});
+  }catch(e){}
+}
+
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function updateScore(){}
 function show(key){
