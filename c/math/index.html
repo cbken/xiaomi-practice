@@ -205,11 +205,13 @@ article.q.dim{opacity:.35}
 .hwempty{border:1.5px dashed var(--line);border-radius:12px;padding:22px 16px;text-align:center;color:var(--mute);font-size:14px;line-height:1.7;margin:12px 0}
 .syncbadge{position:fixed;right:10px;bottom:10px;z-index:50;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--good-soft);color:var(--ink);border:1px solid var(--line);cursor:pointer;opacity:.92}
 .syncbadge.warn{background:var(--bad-soft)}
+.askbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}.askbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}.askbox .ar{display:flex;gap:8px}.askbox input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--tab);color:var(--ink)}.askbox .am{font-size:12.5px;color:#2E8B57;margin-top:4px;min-height:1.2em}
 </style></head><body>
 <header><div class="wrap">
 <div class="brand"><h1>國三數學<small>先自己想、念出來，再看答案</small></h1><div class="score" id="score"></div></div>
 <div class="tabs" role="tablist" id="tabs"></div>
 </div></header>
+<div id="askbox" class="askbox" hidden><div class="eh"><b>🙋 我卡在這題</b><span>打一句就好，隔天早上小咪回妳</span></div><div class="ar"><input id="asktxt" type="text" maxlength="200" placeholder="例：題 13 為什麼高是 3 不是 6"><button class="gbtn" id="asksend" type="button">送出</button></div><div id="askmsg" class="am"></div></div>
 <main class="wrap" id="main"></main>
 <script>
 const DATA = []; const state = {};
@@ -257,6 +259,7 @@ const SYNC = {"url": "https://xm.kvkv.asia", "child": "c"};   // {url:'https://x
   window.addEventListener('online',()=>{ pull(); flushQueue(); });
 })();
 
+(function(){ const box=document.getElementById('askbox'); if(!box||typeof window.askXiaomi!=='function') return; box.hidden=false; document.getElementById('asksend').addEventListener('click',async()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; const msg=document.getElementById('askmsg'); if(!localStorage.getItem('xm_token')){ msg.textContent='先按右下角 🔑 輸入 PIN，小咪才收得到'; return; } const cur=document.querySelector('.set.on'); const ok=await window.askXiaomi(cur?cur.id.slice(4):'', v, location.pathname); msg.textContent=ok?'小咪收到了 ✓ 明天早上回妳':'先存起來了，有網路會自動送出'; document.getElementById('asktxt').value=''; }); })();
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function updateScore(){}
 function show(key){
