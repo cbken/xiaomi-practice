@@ -205,6 +205,8 @@ article.q.dim{opacity:.35}
 .hwempty{border:1.5px dashed var(--line);border-radius:12px;padding:22px 16px;text-align:center;color:var(--mute);font-size:14px;line-height:1.7;margin:12px 0}
 .syncbadge{position:fixed;right:10px;bottom:10px;z-index:50;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--good-soft);color:var(--ink);border:1px solid var(--line);cursor:pointer;opacity:.92}
 .syncbadge.warn{background:var(--bad-soft)}
+.synctop{margin:8px 0;padding:10px 12px;border-radius:12px;background:var(--bad-soft);border:1.5px solid var(--line);font-weight:700;cursor:pointer;text-align:center}
+.synctop[hidden]{display:none}
 .askbox{margin:8px 0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}.askbox .eh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}.askbox .ar{display:flex;gap:8px}.askbox input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--tab);color:var(--ink)}.askbox .am{font-size:12.5px;color:#2E8B57;margin-top:4px;min-height:1.2em}
 </style></head><body>
 <header><div class="wrap">
@@ -240,7 +242,7 @@ const SYNC = {"url": "https://xm.kvkv.asia", "child": "c"};   // {url:'https://x
   const setUpd=o=>{ try{ localStorage.setItem('xm_sync_up', JSON.stringify(o)); }catch(e){} };
   const snap=()=>{ const st={}; KEYS().forEach(k=>{ try{ st[k]=JSON.parse(localStorage.getItem(k)); }catch(e){ st[k]=localStorage.getItem(k); } }); return st; };
   let dirty=false, timer=null, online=true;
-  function badge(t,cls){ let b=document.getElementById('syncbadge'); if(!b){ b=document.createElement('div'); b.id='syncbadge'; b.className='syncbadge'; document.body.appendChild(b); } b.textContent=t; b.className='syncbadge '+(cls||''); }
+  function badge(t,cls){ let b=document.getElementById('syncbadge'); if(!b){ b=document.createElement('div'); b.id='syncbadge'; b.className='syncbadge'; document.body.appendChild(b); } b.textContent=t; b.className='syncbadge '+(cls||''); let top=document.getElementById('synctop'); if(!top){ top=document.createElement('div'); top.id='synctop'; top.className='synctop'; const h=document.querySelector('.hub')||document.querySelector('header .wrap')||document.getElementById('main'); if(h) h.insertAdjacentElement(h.classList&&h.classList.contains('hub')?'afterend':'afterbegin', top); } top.textContent=t; top.className='synctop '+(cls||''); top.hidden=!cls; }
   async function pull(){ if(!tok()) return; try{ const r=await fetch(SYNC.url+'/state',{headers:hdr()}); if(r.status===401){ localStorage.removeItem('xm_token'); badge('🔑 需要重新輸入 PIN','warn'); return; } const d=await r.json(); const u=upd(); let changed=false; Object.keys(d.state||{}).forEach(k=>{ const remoteT=d.updated[k]||0, localT=u[k]||0; if(remoteT>localT){ localStorage.setItem(k, JSON.stringify(d.state[k])); u[k]=remoteT; changed=true; } }); setUpd(u); online=true; badge('☁️ 已同步',''); if(changed) setTimeout(()=>location.reload(),300); }catch(e){ online=false; badge('📵 離線，先存這台','warn'); } }
   async function push(){ if(!tok()||!dirty) return; dirty=false; const st=snap(), u=upd(); const now=Date.now()/1000; KEYS().forEach(k=>{ if(!u[k]) u[k]=now; }); try{ const r=await fetch(SYNC.url+'/state',{method:'PUT',headers:hdr(),body:JSON.stringify({state:st,updated:u})}); if(r.ok){ const d=await r.json(); setUpd(d.updated||u); online=true; badge('☁️ 已同步',''); flushQueue(); } else if(r.status===401){ localStorage.removeItem('xm_token'); badge('🔑 需要重新輸入 PIN','warn'); } }catch(e){ dirty=true; online=false; badge('📵 離線，先存這台','warn'); } }
   // 任何 localStorage 寫入 → 標記該 key 的時間、排程上傳
@@ -254,7 +256,7 @@ const SYNC = {"url": "https://xm.kvkv.asia", "child": "c"};   // {url:'https://x
   window.askXiaomi=async function(item,text,page){ const b={item,text,page:page||location.pathname}; const ok=await send('/ask',b); if(!ok){ const a=q(); a.push({p:'/ask',b}); setQ(a); } return ok; };
   // PIN 輸入（第一次）
   async function login(){ const pin=prompt('輸入妳的 PIN（爸爸給的那組，第一次才要）'); if(!pin) return; try{ const r=await fetch(SYNC.url+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({child:SYNC.child,pin:pin.trim()})}); if(r.ok){ const d=await r.json(); localStorage.setItem('xm_token',d.token); badge('☁️ 已連線',''); dirty=true; await pull(); push(); } else if(r.status===429){ badge('等 15 分鐘再試','warn'); } else { badge('PIN 不對','warn'); } }catch(e){ badge('📵 連不上，晚點再試','warn'); } }
-  document.addEventListener('click',e=>{ const b=e.target.closest('#syncbadge'); if(b && !tok()) login(); });
+  document.addEventListener('click',e=>{ const b=e.target.closest('#syncbadge,#synctop'); if(b && !tok()) login(); });
   if(tok()){ pull(); } else { badge('🔑 輸入 PIN 開啟同步','warn'); }
   window.addEventListener('online',()=>{ pull(); flushQueue(); });
 })();
