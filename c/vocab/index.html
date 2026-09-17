@@ -1119,7 +1119,7 @@ const VOCAB = {"title": "一年 2000 字", "perDay": 6, "target": 1999, "placeme
 })();
 
 (function(){ const box=document.getElementById('askbox'); if(!box||typeof window.askXiaomi!=='function') return; box.hidden=false; document.getElementById('asksend').addEventListener('click',async()=>{ const v=document.getElementById('asktxt').value.trim(); if(!v) return; const msg=document.getElementById('askmsg'); if(!localStorage.getItem('xm_token')){ msg.textContent='先按右下角 🔑 輸入 PIN，小咪才收得到'; return; } const ok=await window.askXiaomi('vocab', v, location.pathname); msg.textContent=ok?'小咪收到了 ✓ 明天早上回妳':'先存起來了，有網路會自動送出'; document.getElementById('asktxt').value=''; }); })();
-(function(){   // 單字排第一，情緒動詞在後；重新編號
+(function(){   // 分頁重新編號
   const tabs=document.getElementById('tabs'), main=document.getElementById('main');
   const tv=document.getElementById('tab-vocab'), sv=document.getElementById('set-vocab');
   if(tv) tabs.prepend(tv); if(sv) main.prepend(sv);
