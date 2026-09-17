@@ -268,7 +268,12 @@ function logEvent(item, picked, correct){
 const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {url, child}
 (function(){
   if(!SYNC || !SYNC.url) return;
-  const SAME = location.host===atob('eG0ua3Zrdi5hc2lh') || location.hostname==='localhost' || location.hostname==='127.0.0.1'; const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
+  const SAME = location.host===atob('eG0ua3Zrdi5hc2lh') || location.hostname==='localhost' || location.hostname==='127.0.0.1';
+  const CHILD = SYNC.child || '';
+  const boundTo = (()=>{ try{ return localStorage.getItem('xm_child')||''; }catch(e){ return ''; } })();
+  if(boundTo && CHILD && boundTo !== CHILD){   // 這台裝置已經是另一個人的 → 只存本機，不同步
+    const b=document.createElement('div'); b.id='syncbadge'; b.className='syncbadge warn'; b.textContent='📵 這台裝置不是妳的帳號'; document.body.appendChild(b); return;
+  } const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
   const KEYS=()=>Object.keys(localStorage).filter(k=>/^(xm_|xe_)/.test(k)&&k!=='xm_token'&&k!=='xm_device'&&k!=='xm_sync_up'&&k!=='xm_queue');
   const tok=()=>{ try{ return localStorage.getItem('xm_token')||''; }catch(e){ return ''; } };
   const hdr=()=>({'Content-Type':'application/json','Authorization':'Bearer '+tok()});
@@ -289,7 +294,7 @@ const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {ur
   window.logEvent=function(item,picked,correct){ const b={item,picked:String(picked),correct:correct===null?'seen':(correct?'1':'0'),ts:new Date().toISOString(),device:(function(){ try{ let d=localStorage.getItem('xm_device'); if(!d){ d=Math.random().toString(36).slice(2,8); localStorage.setItem('xm_device',d);} return d; }catch(e){ return ''; } })()}; send('/log',b).then(ok=>{ if(!ok){ const a=q(); a.push({p:'/log',b}); setQ(a); } }); };
   window.askXiaomi=async function(item,text,page){ const b={item,text,page:page||location.pathname}; const ok=await send('/ask',b); if(!ok){ const a=q(); a.push({p:'/ask',b}); setQ(a); } return ok; };
   // PIN 輸入（第一次）
-  async function login(){ const pin=SAME ? '' : prompt('輸入妳的 PIN（爸爸給的那組，第一次才要）'); if(pin===null) return; try{ const r=await fetch(BASE+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({child:SYNC.child,pin:pin.trim()})}); if(r.ok){ const d=await r.json(); localStorage.setItem('xm_token',d.token); badge('☁️ 已連線',''); dirty=true; await pull(); push(); showAsks(); } else if(r.status===429){ badge('等 15 分鐘再試','warn'); } else { badge('PIN 不對','warn'); } }catch(e){ badge('📵 連不上，晚點再試','warn'); } }
+  async function login(){ const pin=SAME ? '' : prompt('輸入妳的 PIN（爸爸給的那組，第一次才要）'); if(pin===null) return; try{ const r=await fetch(BASE+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({child:SYNC.child,pin:pin.trim()})}); if(r.ok){ const d=await r.json(); localStorage.setItem('xm_token',d.token); try{ localStorage.setItem('xm_child', CHILD); }catch(e){} badge('☁️ 已連線',''); dirty=true; await pull(); push(); showAsks(); } else if(r.status===429){ badge('等 15 分鐘再試','warn'); } else { badge('PIN 不對','warn'); } }catch(e){ badge('📵 連不上，晚點再試','warn'); } }
   document.addEventListener('click',e=>{ const b=e.target.closest('#syncbadge,#synctop'); if(b && !tok()) login(); });
   if(tok()){ pull(); } else if(SAME){ login(); } else { badge('🔑 輸入 PIN 開啟同步','warn'); }
   // ---- 小咪回妳（🙋 的答案）＋ 📷 拍給小咪 ----
