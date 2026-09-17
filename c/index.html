@@ -350,6 +350,8 @@ article.q.dim{opacity:.35}
 .xmpanel{margin:8px 0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)} .xmh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin-bottom:6px}
 .xma{padding:8px 0;border-top:1px dashed var(--line)} .xma .q{font-size:13.5px;color:var(--mute)} .xma .q .t{font-size:11.5px;margin-left:6px} .xma .a{margin-top:4px;white-space:pre-wrap;line-height:1.55} .xma.new .a{background:var(--good-soft);border-radius:8px;padding:6px 8px}
 .xme{font-size:13px;color:var(--mute)} .xmup{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);display:grid;gap:6px} .xmup span{font-size:12.5px;color:var(--mute)} .xmup input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--tab);color:var(--ink)} .xmm{font-size:12.5px;color:#2E8B57;min-height:1.2em}
+.xmtoggle{cursor:pointer;align-items:center} .xmtoggle b{font-size:14px} .xmarw{margin-left:6px;font-size:12px}
+.xmpanel .askbox.inpanel{margin:0 0 8px;border:0;padding:0;background:transparent}
 .hub{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}.hub a{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.hub a.sheet{background:#2E7D4F}
 </style></head><body>
 <header><div class="wrap">
@@ -503,11 +505,25 @@ const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {ur
   document.addEventListener('click',e=>{ const b=e.target.closest('#syncbadge,#synctop'); if(b && !tok()) login(); });
   if(tok()){ pull(); } else if(SAME){ login(); } else { badge('🔑 輸入 PIN 開啟同步','warn'); }
   // ---- 小咪回妳（🙋 的答案）＋ 📷 拍給小咪 ----
+  // 預設收合，有新回覆才自動展開（9/17 定案：預設收合）
   function panel(){ let p=document.getElementById('xmpanel'); if(!p){ p=document.createElement('div'); p.id='xmpanel'; p.className='xmpanel'; const ask=document.getElementById('askbox'); const host=ask||document.querySelector('.hub')||document.getElementById('main'); if(host) host.insertAdjacentElement(ask?'afterend':'afterbegin', p); } return p; }
-  async function showAsks(){ if(!tok()) return; try{ const r=await fetch(BASE+'/asks',{headers:hdr()}); if(!r.ok) return; const d=await r.json(); const p=panel(); const ans=(d.asks||[]).filter(a=>a.answer); const wait=(d.asks||[]).filter(a=>!a.answer).length;
+  function panelOpen(v){ const p=document.getElementById('xmpanel'); if(!p) return; const body=p.querySelector('.xmbody'); const arw=p.querySelector('.xmarw'); if(!body) return; body.hidden=!v; if(arw) arw.textContent=v?'▾':'▸'; try{ localStorage.setItem('xm_panel_open', v?'1':'0'); }catch(e){} }
+  function panelShell(){   // 還沒輸入 PIN 也要有這塊（收合），不然 🙋 會自己一個人露在外面
+    const p=panel(); if(p.dataset.live==='1') return;
+    const openPref=(()=>{ try{ return localStorage.getItem('xm_panel_open')==='1'; }catch(e){ return false; } })();
+    p.innerHTML=`<div class="xmh xmtoggle"><b>🙋 問小咪・📷 拍給小咪</b><span>卡住、或要給小咪看東西，點這裡<span class="xmarw">${openPref?'▾':'▸'}</span></span></div><div class="xmbody" ${openPref?'':'hidden'}><div class="xmslot"></div><div class="xme">先按右下角 🔑 輸入 PIN，小咪才收得到。</div></div>`;
+    const ab=document.getElementById('askbox'), slot=p.querySelector('.xmslot'); if(ab && slot && !slot.contains(ab)){ ab.hidden=false; ab.classList.add('inpanel'); slot.appendChild(ab); }
+    p.querySelector('.xmtoggle').onclick=()=>panelOpen(p.querySelector('.xmbody').hidden);
+  }
+  async function showAsks(){ if(!tok()){ panelShell(); return; } try{ const r=await fetch(BASE+'/asks',{headers:hdr()}); if(!r.ok) return; const d=await r.json(); const p=panel(); const ans=(d.asks||[]).filter(a=>a.answer); const wait=(d.asks||[]).filter(a=>!a.answer).length;
       let seen={}; try{ seen=JSON.parse(localStorage.getItem('xm_ans_seen')||'{}'); }catch(e){}
       const fresh=ans.filter(a=>!seen[a.id]).length;
-      p.innerHTML=`<div class="xmh"><b>💬 小咪回妳</b><span>${fresh?`${fresh} 則新回覆`:(wait?`${wait} 題等小咪回（明天早上）`:'')}</span></div>`+(ans.length?ans.slice(0,5).map(a=>`<div class="xma${seen[a.id]?'':' new'}"><div class="q">🙋 ${esc(a.text)} <span class="t">${esc(a.ts)}</span></div><div class="a">${esc(a.answer)}</div></div>`).join(''):'<div class="xme">按上面「🙋 我卡在這題」問我，答案會出現在這裡。</div>')+`<div class="xmup"><b>📷 拍給小咪</b><span>考卷、作業、看不懂的那一頁，拍了直接傳，不用經過爸爸</span><input type="file" id="xmfiles" accept="image/*,.pdf" multiple capture="environment"><input type="text" id="xmnote" maxlength="120" placeholder="一句話：這是什麼（例：今天的數學小考）"><button class="gbtn" id="xmsend">送出</button><div id="xmupmsg" class="xmm"></div></div>`;
+      const openPref=(()=>{ try{ return localStorage.getItem('xm_panel_open')==='1'; }catch(e){ return false; } })();
+      const open = openPref || fresh>0;
+      p.innerHTML=`<div class="xmh xmtoggle"><b>🙋 問小咪・📷 拍給小咪</b><span>${fresh?`🔴 ${fresh} 則新回覆`:(wait?`${wait} 題等小咪回（明天早上）`:'卡住、或要給小咪看東西，點這裡')}<span class="xmarw">${open?'▾':'▸'}</span></span></div><div class="xmbody" ${open?'':'hidden'}><div class="xmslot"></div>`+(ans.length?ans.slice(0,5).map(a=>`<div class="xma${seen[a.id]?'':' new'}"><div class="q">🙋 ${esc(a.text)} <span class="t">${esc(a.ts)}</span></div><div class="a">${esc(a.answer)}</div></div>`).join(''):'<div class="xme">按上面「🙋 我卡在這題」問我，答案會出現在這裡。</div>')+`<div class="xmup"><b>📷 拍給小咪</b><span>考卷、作業、看不懂的那一頁，拍了直接傳</span><input type="file" id="xmfiles" accept="image/*,.pdf" multiple capture="environment"><input type="text" id="xmnote" maxlength="120" placeholder="一句話：這是什麼（例：今天的數學小考）"><button class="gbtn" id="xmsend">送出</button><div id="xmupmsg" class="xmm"></div></div></div>`;
+      const ab=document.getElementById('askbox'), slot=p.querySelector('.xmslot'); if(ab && slot && !slot.contains(ab)){ ab.hidden=false; ab.classList.add('inpanel'); slot.appendChild(ab); }
+      p.dataset.live='1';
+      p.querySelector('.xmtoggle').onclick=()=>panelOpen(p.querySelector('.xmbody').hidden);
       ans.forEach(a=>seen[a.id]=1); try{ localStorage.setItem('xm_ans_seen', JSON.stringify(seen)); }catch(e){}
       const send=document.getElementById('xmsend'); send.onclick=async()=>{ const fi=document.getElementById('xmfiles'); const msg=document.getElementById('xmupmsg'); if(!fi.files.length){ msg.textContent='先選照片'; return; } const fd=new FormData(); [...fi.files].forEach(f=>fd.append('files',f,f.name)); fd.append('note',document.getElementById('xmnote').value); send.disabled=true; msg.textContent='傳送中…'; try{ const r=await fetch(BASE+'/upload',{method:'POST',headers:{'Authorization':'Bearer '+tok()},body:fd}); const d=await r.json(); msg.textContent=r.ok?('✓ '+(d.msg||'收到了')):'沒送出去，等一下再試'; if(r.ok){ fi.value=''; document.getElementById('xmnote').value=''; } }catch(e){ msg.textContent='沒送出去（沒網路？），等一下再試'; } send.disabled=false; };
     }catch(e){} }
