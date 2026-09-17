@@ -371,7 +371,7 @@ function dueWrong(){ const t=today(); return Object.values(WRONG).filter(w=>w.ne
 function renderWrong(){
   let s=document.getElementById('set-wrong'); if(!s){ tab('wrong','④ 錯題回來'); s=sec('wrong'); }
   const due=dueWrong(), all=Object.keys(WRONG).length;
-  let h=`<div class="setsub">答錯的題目會在 2 天後回來一次、7 天後再一次；連續答對兩次就畢業。${EXAM.length?'妳考卷上錯的題也在這裡，先做這幾題。':''}<br>目前 ${all} 題在名單裡、今天到期 ${due.length} 題。過關記在這台裝置上。</div>`;
+  let h=`<div class="setsub">答錯的題目會在 2 天後回來一次、7 天後再一次；連續答對兩次就畢業。${EXAM.length?'考卷上錯的題也在這裡，先做這幾題。':''}<br>目前 ${all} 題在名單裡、今天到期 ${due.length} 題。過關記在這台裝置上。</div>`;
   if(!due.length){ h+='<div class="empty">今天沒有到期的錯題。</div>'; s.innerHTML=h; return; }
   due.forEach(q=>{ h+=`<article class="q" data-n="${q.n}"><div class="num"><span>再考</span><span class="src">${esc(q.grade)}<span class="pt">${esc(q.point)}</span></span></div><div class="stem">${esc(q.stem)}</div><div class="ear">👂 先小聲把四個選項各念一遍——哪一個念起來最順？再選。</div><div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}"><b>${'ABCD'[i]}</b> ${esc(o)}</button>`).join('')}</div><div class="fb"></div></article>`; });
   s.innerHTML=h;
