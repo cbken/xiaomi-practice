@@ -272,11 +272,25 @@ const SYNC = {"url": "b64:aHR0cHM6Ly94bS5rdmt2LmFzaWE=", "child": "c"};   // {ur
   if(!SYNC || !SYNC.url) return;
   const SAME = location.host===atob('eG0ua3Zrdi5hc2lh') || location.hostname==='localhost' || location.hostname==='127.0.0.1';
   const CHILD = SYNC.child || '';
-  const boundTo = (()=>{ try{ return localStorage.getItem('xm_child')||''; }catch(e){ return ''; } })();
-  if(boundTo && CHILD && boundTo !== CHILD){   // 這台裝置已經是另一個人的 → 只存本機，不同步
-    const b=document.createElement('div'); b.id='syncbadge'; b.className='syncbadge warn'; b.textContent='📵 這台裝置不是妳的帳號'; document.body.appendChild(b); return;
-  } const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
-  const KEYS=()=>Object.keys(localStorage).filter(k=>/^(xm_|xe_)/.test(k)&&k!=='xm_token'&&k!=='xm_device'&&k!=='xm_sync_up'&&k!=='xm_queue');
+  // 同一個網域兩個人共用瀏覽器 → 每個人的進度加自己的前綴，互不污染（9/18）
+  const NS = CHILD ? CHILD + ':' : '';
+  const isProg = k => /^(xm_|xe_)/.test(String(k)) && String(k) !== 'xm_child';
+  (function(){
+    if(!NS) return;
+    const _g = Storage.prototype.getItem, _s = Storage.prototype.setItem, _r = Storage.prototype.removeItem;
+    Storage.prototype.getItem = function(k){ return _g.call(this, (this===localStorage && isProg(k)) ? NS+k : k); };
+    Storage.prototype.setItem = function(k,v){ return _s.call(this, (this===localStorage && isProg(k)) ? NS+k : k, v); };
+    Storage.prototype.removeItem = function(k){ return _r.call(this, (this===localStorage && isProg(k)) ? NS+k : k); };
+    try{   // 舊資料（沒前綴）搬進自己的空間，只做一次
+      if(!_g.call(localStorage, NS+'xm_ns_done')){
+        Object.keys(localStorage).forEach(k=>{ if(isProg(k) && k.indexOf(':')<0 && !_g.call(localStorage, NS+k)) _s.call(localStorage, NS+k, _g.call(localStorage,k)); });
+        _s.call(localStorage, NS+'xm_ns_done','1');
+      }
+    }catch(e){}
+  })();
+  const BASE = SAME ? '' : (SYNC.url.startsWith('b64:')?atob(SYNC.url.slice(4)):SYNC.url);
+  const SKIP={'xm_token':1,'xm_device':1,'xm_sync_up':1,'xm_queue':1,'xm_child':1,'xm_ns_done':1,'xm_panel_open':1,'xm_ans_seen':1};
+  const KEYS=()=>Object.keys(localStorage).filter(k=>k.indexOf(NS)===0).map(k=>k.slice(NS.length)).filter(k=>/^(xm_|xe_)/.test(k)&&!SKIP[k]);
   const tok=()=>{ try{ return localStorage.getItem('xm_token')||''; }catch(e){ return ''; } };
   const hdr=()=>({'Content-Type':'application/json','Authorization':'Bearer '+tok()});
   const upd=()=>{ try{ return JSON.parse(localStorage.getItem('xm_sync_up')||'{}'); }catch(e){ return {}; } };
