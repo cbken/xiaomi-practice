@@ -4333,7 +4333,7 @@ document.getElementById('exportcopy').addEventListener('click',()=>{ const ta=do
 })();
 
 // ---- 「今天」入口：只出 1–2 件事，其他收在「全部內容」後面 ----
-const TODAY = {"date": "2026-09-18", "budget_min": 25, "tasks": [{"href": "math/", "label": "數學：③ 考卷練習 9/16 → 題 3、6、16", "min": 15, "note": "題 3 看「剩下的 1」、題 6 驗算完要回去改括號、題 16 係數不是 1 要整條除"}, {"href": "vocab/", "label": "單字：先做 200 字快篩（5 分鐘），做完就有自己的角色", "min": 10, "note": "認得就按認得，不確定按不認得，不是考試"}]};
+const TODAY = {"date": "2026-09-20", "budget_min": 20, "tasks": [{"href": "vocab/", "label": "單字：把 200 字快篩做完（還剩一半，5 分鐘）", "min": 6, "note": "做完就知道要背的大概剩幾個字"}, {"href": "math/", "label": "數學：③ 考卷練習 9/16 → 題 3、6、16", "min": 14, "note": "三題都是差一步：剩下的 1／驗算完回去改／係數不是 1 要整條除"}]};
 (function(){
   if(!TODAY || !TODAY.tasks || !TODAY.tasks.length) return;
   const tabs=document.getElementById('tabs'); const main=document.getElementById('main');
